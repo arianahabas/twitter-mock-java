@@ -20,14 +20,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class HashtagDto {
 
-    private Long id;
-
     private String label;
 
     private Timestamp firstUsed;
 
     private Timestamp lastUsed;
 
-    private List<TweetResponseDto> tweets;
 }
 

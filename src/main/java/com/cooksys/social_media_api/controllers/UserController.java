@@ -3,7 +3,10 @@ package com.cooksys.social_media_api.controllers;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
-@RequestMapping
+@RequiredArgsConstructor
+@RequestMapping("/users")
 public class UserController {
 }

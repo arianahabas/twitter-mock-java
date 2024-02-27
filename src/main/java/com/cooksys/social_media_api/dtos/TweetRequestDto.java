@@ -13,26 +13,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class TweetRequestDto {
 
-    private UserRequestDto author;
-
-    private Timestamp posted;
-
-    private boolean deleted = false;
-
     private String content;
 
-    private TweetRequestDto inReplyTo;
-
-    private TweetRequestDto repostOf;
-
-    private List<TweetRequestDto> replies;
-
-    private List<TweetRequestDto> reposts;
- 
-    private List<UserRequestDto> mentionedUsers ;
-
-    private List<HashtagDto> hashtags;
-
-    private List<UserRequestDto> likedByUsers;
+    private CredentialsDto credentials;
 
 }

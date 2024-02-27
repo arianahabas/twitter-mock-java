@@ -26,27 +26,15 @@ public class TweetResponseDto {
 	
     private Long id;
 
-    private UserRequestDto author;
+    private UserResponseDto author;
 
     private Timestamp posted;
-
-    private boolean deleted = false;
 
     private String content;
 
     private TweetResponseDto inReplyTo;
 
     private TweetResponseDto repostOf;
-
-    private List<TweetResponseDto> replies;
-
-    private List<TweetResponseDto> reposts;
- 
-    private List<UserResponseDto> mentionedUsers ;
-
-    private List<HashtagDto> hashtags;
-
-    private List<UserResponseDto> likedByUsers;
 
 
 }

@@ -25,24 +25,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UserResponseDto {
 	
-    private Long id;
+		private String username;
 
     private Timestamp joined;
 
-    private boolean deleted =false;
-
-    private CredentialsDto credentials;
-
     private ProfileDto profile;
-
-    private List<TweetResponseDto> tweets;
-
-    private List<UserResponseDto> followers;
-
-    private List<UserResponseDto> following;
-
-    private List<TweetResponseDto> likedTweets;
-
-    private List<TweetResponseDto> mentionedTweets;
 
 }

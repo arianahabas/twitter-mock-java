@@ -10,22 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UserRequestDto {
 
-    private Timestamp joined;
-
-    private boolean deleted =false;
-
     private CredentialsDto credentials;
 
     private ProfileDto profile;
-
-    private List<TweetRequestDto> tweets;
-
-    private List<UserRequestDto> followers;
-
-    private List<UserRequestDto> following;
-
-    private List<TweetRequestDto> likedTweets;
-
-    private List<TweetRequestDto> mentionedTweets;
 
 }

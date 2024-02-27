@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ProfileDto {
 	
-	private String firstName;
+		private String firstName;
 
     private String lastName;
 
