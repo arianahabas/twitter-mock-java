@@ -1,4 +1,4 @@
-package com.cooksys.social_media_api.exceptions;
+package com.cooksys.social_media_api.services.exceptions;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

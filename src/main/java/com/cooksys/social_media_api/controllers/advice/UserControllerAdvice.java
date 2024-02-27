@@ -1,8 +1,9 @@
 package com.cooksys.social_media_api.controllers.advice;
 
-import com.cooksys.social_media_api.exceptions.BadRequestException;
-import com.cooksys.social_media_api.exceptions.NotAuthorizedException;
-import com.cooksys.social_media_api.exceptions.NotFoundException;
+import com.cooksys.social_media_api.dtos.ErrorDto;
+import com.cooksys.social_media_api.services.exceptions.BadRequestException;
+import com.cooksys.social_media_api.services.exceptions.NotAuthorizedException;
+import com.cooksys.social_media_api.services.exceptions.NotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -13,8 +14,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ControllerAdvice(basePackages = {"com.cooksys.social_media_api.controllers"})
 @ResponseBody
 public class UserControllerAdvice {
-    /*
-    TODO: Make sure that the ErrorDto is the same name.
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(BadRequestException.class)
@@ -33,7 +32,5 @@ public class UserControllerAdvice {
     public ErrorDto handleNotAuthorizedException(HttpServletRequest request, NotAuthorizedException notAuthorizedException){
         return new ErrorDto(notAuthorizedException.getMessage());
     }
-
-     */
 
 }
