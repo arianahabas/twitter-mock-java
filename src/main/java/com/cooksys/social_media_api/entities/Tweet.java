@@ -28,11 +28,9 @@ public class Tweet {
 
     private String content;
 
-    //FK
     @ManyToOne
     private Tweet inReplyTo;
 
-    //FK
     @ManyToOne
     private Tweet repostOf;
 
