@@ -3,8 +3,11 @@ package com.cooksys.social_media_api.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 @Table(name = "user_table")
 @Entity
@@ -16,9 +19,10 @@ public class User {
     @GeneratedValue
     private Long id;
 
+    @CreationTimestamp
     private Timestamp joined;
 
-    private boolean deleted;
+    private boolean deleted =false;
 
     @Embedded
     private Credentials credentials;
@@ -26,14 +30,25 @@ public class User {
     @Embedded
     private Profile profile;
 
+    @OneToMany(mappedBy = "author")
+    private List<Tweet> tweets = new ArrayList<>();
 
-    /*
-    @ManyToOne
-    @JoinColumn(name = "quiz_id")
-    private Quiz quiz;
+    @ManyToMany
+    @JoinTable(name ="followers_following")
+    private List<User> followers = new ArrayList<>();
 
-    @OneToMany(mappedBy = "question")
-    private List<Answer> answers;
-     */
+    @ManyToMany(mappedBy = "followers")
+    private List<User> following = new ArrayList<>();
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_likes",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "tweet_id")
+    )
+    private List<Tweet> likedTweets = new ArrayList<>();
+
+    @ManyToMany(mappedBy = "mentionedUsers")
+    private List<Tweet> mentionedTweets = new ArrayList<>();
 
 }

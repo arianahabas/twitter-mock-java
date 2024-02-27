@@ -1,12 +1,14 @@
 package com.cooksys.social_media_api.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @NoArgsConstructor
@@ -17,19 +19,15 @@ public class Hashtag {
     @GeneratedValue
     private Long id;
 
+    @Column(nullable = false, unique = true)
     private String label;
 
+    @CreationTimestamp
     private Timestamp firstUsed;
 
+    @UpdateTimestamp
     private Timestamp lastUsed;
 
-    /*
-    @ManyToOne
-    @JoinColumn(name = "quiz_id")
-    private Quiz quiz;
-
-    @OneToMany(mappedBy = "question")
-    private List<Answer> answers;
-     */
-
+    @ManyToMany(mappedBy = "hashtags")
+    private List<Tweet> tweets = new ArrayList<>();
 }

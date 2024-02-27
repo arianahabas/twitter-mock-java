@@ -20,6 +20,7 @@ public class Profile {
 
     private String lastName;
 
+    @Column(nullable = false, unique = true)
     private String email;
 
     private String phone;

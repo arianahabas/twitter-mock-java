@@ -1,12 +1,13 @@
 package com.cooksys.social_media_api.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @NoArgsConstructor
@@ -17,28 +18,48 @@ public class Tweet {
     @GeneratedValue
     private Long id;
 
-    //FK
-    private Integer author;
+    @ManyToOne
+    private User author;
 
+    @CreationTimestamp
     private Timestamp posted;
 
-    private boolean deleted;
+    private boolean deleted = false;
 
     private String content;
 
     //FK
-    private Integer inReplyTo;
+    @ManyToOne
+    private Tweet inReplyTo;
 
     //FK
-    private Integer repostOf;
-
-    /*
     @ManyToOne
-    @JoinColumn(name = "quiz_id")
-    private Quiz quiz;
+    private Tweet repostOf;
 
-    @OneToMany(mappedBy = "question")
-    private List<Answer> answers;
-     */
+    @OneToMany(mappedBy = "inReplyTo")
+    private List<Tweet> replies = new ArrayList<>();
+
+    @OneToMany(mappedBy = "repostOf")
+    private List<Tweet> reposts = new ArrayList<>();
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_mentions",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "tweet_id")
+    )
+    private List<User> mentionedUsers = new ArrayList<>();
+
+    @ManyToMany
+    @JoinTable(
+            name = "tweet_hashtags",
+            joinColumns = @JoinColumn(name = "tweet_id"),
+            inverseJoinColumns = @JoinColumn(name = "hashtag_id")
+    )
+    private List<Hashtag> hashtags = new ArrayList<>();
+
+    @ManyToMany(mappedBy = "likedTweets")
+    private List<User> likedByUsers = new ArrayList<>();
+
 
 }
