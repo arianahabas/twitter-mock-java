@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.mapstruct.Mapper;
 
-import com.cooksys.social_media_api.dtos.entities.Profile;
+import com.cooksys.social_media_api.entities.Profile;
 import com.cooksys.social_media_api.dtos.ProfileDto;
 
 

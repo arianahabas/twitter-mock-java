@@ -1,4 +1,4 @@
-package com.cooksys.social_media_api.dtos.entities;
+package com.cooksys.social_media_api.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;

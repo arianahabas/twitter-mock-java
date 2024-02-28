@@ -5,7 +5,7 @@ import java.util.List;
 import org.mapstruct.Mapper;
 
 import com.cooksys.social_media_api.dtos.CredentialsDto;
-import com.cooksys.social_media_api.dtos.entities.Credentials;
+import com.cooksys.social_media_api.entities.Credentials;
 
 @Mapper(componentModel = "spring")
 public interface CredentialsMapper {

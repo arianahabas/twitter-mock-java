@@ -1,7 +1,9 @@
 package com.cooksys.social_media_api.controllers;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.cooksys.social_media_api.dtos.UserRequestDto;
+import com.cooksys.social_media_api.dtos.UserResponseDto;
+import com.cooksys.social_media_api.services.UserService;
+import org.springframework.web.bind.annotation.*;
 
 import lombok.RequiredArgsConstructor;
 
@@ -9,4 +11,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/users")
 public class UserController {
+
+    private final UserService userService;
+
+    @PostMapping
+    public UserResponseDto createUser(@RequestBody UserRequestDto userRequestDto){
+        return userService.createUser(userRequestDto);
+    }
+
 }

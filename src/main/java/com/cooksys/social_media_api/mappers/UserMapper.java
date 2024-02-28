@@ -7,7 +7,7 @@ import org.mapstruct.Mapping;
 
 import com.cooksys.social_media_api.dtos.UserRequestDto;
 import com.cooksys.social_media_api.dtos.UserResponseDto;
-import com.cooksys.social_media_api.dtos.entities.User;
+import com.cooksys.social_media_api.entities.User;
 
 @Mapper(componentModel = "spring", uses = { CredentialsMapper.class, ProfileMapper.class })
 public interface UserMapper {
