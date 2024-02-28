@@ -1,9 +1,9 @@
 package com.cooksys.social_media_api.controllers.advice;
 
 import com.cooksys.social_media_api.dtos.ErrorDto;
-import com.cooksys.social_media_api.services.exceptions.BadRequestException;
-import com.cooksys.social_media_api.services.exceptions.NotAuthorizedException;
-import com.cooksys.social_media_api.services.exceptions.NotFoundException;
+import com.cooksys.social_media_api.exceptions.BadRequestException;
+import com.cooksys.social_media_api.exceptions.NotAuthorizedException;
+import com.cooksys.social_media_api.exceptions.NotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;

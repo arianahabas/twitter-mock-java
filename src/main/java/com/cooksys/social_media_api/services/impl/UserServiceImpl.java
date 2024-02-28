@@ -9,7 +9,7 @@ import com.cooksys.social_media_api.mappers.UserMapper;
 import com.cooksys.social_media_api.repositories.UserRepository;
 import com.cooksys.social_media_api.services.UserService;
 
-import com.cooksys.social_media_api.services.exceptions.BadRequestException;
+import com.cooksys.social_media_api.exceptions.BadRequestException;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
