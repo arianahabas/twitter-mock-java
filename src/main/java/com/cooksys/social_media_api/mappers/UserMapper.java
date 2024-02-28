@@ -11,14 +11,14 @@ import com.cooksys.social_media_api.dtos.entities.User;
 
 @Mapper(componentModel = "spring", uses = { CredentialsMapper.class, ProfileMapper.class })
 public interface UserMapper {
-	
-	@Mapping(target = "username", source = "credentials.username")
+
 	User responseDtoToEntity(UserResponseDto userResponseDto);
 	
 	User requestDtoToEntity(UserRequestDto userRequestDto);
-	
+
 	UserRequestDto entityToRequestDto(User user);
-	
+
+	@Mapping(target = "username", source = "credentials.username")
 	UserResponseDto entityToResponseDto(User user);
 	
 	List<UserRequestDto> entitiesToRequestDtos(List<User> user);
