@@ -4,7 +4,7 @@ import org.mapstruct.Mapper;
 import java.util.List;
 import com.cooksys.social_media_api.dtos.TweetRequestDto;
 import com.cooksys.social_media_api.dtos.TweetResponseDto;
-import com.cooksys.social_media_api.entities.Tweet;
+import com.cooksys.social_media_api.dtos.entities.Tweet;
 
 
 @Mapper(componentModel = "spring", uses = { UserMapper.class })
