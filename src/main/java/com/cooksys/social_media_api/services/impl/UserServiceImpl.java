@@ -29,6 +29,7 @@ public class UserServiceImpl implements UserService {
         User user = userMapper.requestDtoToEntity(userRequestDto);
 
         Credentials credentials = user.getCredentials();
+
         Profile profile = user.getProfile();
 
         //Validation check -> Credentials and Profile together
@@ -53,15 +54,9 @@ public class UserServiceImpl implements UserService {
         }
 
         //Validation check -> Duplication of username
-        /*
-        if(userRepository.existsByUsername(credentials.getUsername())){
+        if(userRepository.existsByCredentialsUsername(credentials.getUsername())){
             throw new BadRequestException("Username already exists");
         }
-
-         */
-
-
-
 
         return userMapper.entityToResponseDto(userRepository.saveAndFlush(user));
     }

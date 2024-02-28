@@ -1,6 +1,5 @@
 package com.cooksys.social_media_api;
 
-import com.cooksys.social_media_api.dtos.entities.*;
 import com.cooksys.social_media_api.entities.*;
 import com.cooksys.social_media_api.repositories.HashtagRepository;
 import com.cooksys.social_media_api.repositories.TweetRepository;

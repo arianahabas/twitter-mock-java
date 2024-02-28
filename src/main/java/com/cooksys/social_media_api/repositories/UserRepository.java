@@ -7,5 +7,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-   // boolean existsByUsername(String username);
+   //Need to call embedded object for derived queries. (i.e. Credentials is the embedded object)
+   boolean existsByCredentialsUsername(String username);
 }
