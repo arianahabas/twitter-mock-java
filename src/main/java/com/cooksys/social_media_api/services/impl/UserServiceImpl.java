@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -84,7 +85,34 @@ public class UserServiceImpl implements UserService {
         } else {
             throw new NotFoundException("User with username: " + username + " not found");
         }
-
+        
     }
+        
+     @Override
+     public List<UserResponseDto> getFollowers(String username){
+    	 Optional<User> optionalUser = userRepository.findByCredentialsUsername(username);
+    	 
+    	 if(!optionalUser.isPresent()) {
+    		 throw new NotFoundException("User with username: " + username + " not found");
+         }
+    	 
+    	 User user = optionalUser.get();
+    	 
+    	 if(user.isDeleted()) {
+    		 throw new BadRequestException("User with username: " + username + " has been deleted");
+    	 }
+    	 
+    	 List<User> followers = new ArrayList<>();
+    	 
+    	 for(User u: user.getFollowers()) {
+    		 if(!u.isDeleted()) {
+    			 followers.add(user);
+    		 }
+    	 }
+    	 
+    	 return userMapper.entitiesToResponseDtos(followers);
+    }
+    
+    
 
 }

@@ -11,4 +11,6 @@ public interface UserService {
     List<UserResponseDto> getAllUsers();
 
     UserResponseDto findByUsername(String username);
+
+	List<UserResponseDto> getFollowers(String username);
 }
