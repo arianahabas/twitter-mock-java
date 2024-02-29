@@ -1,5 +1,6 @@
 package com.cooksys.social_media_api.services;
 
+import com.cooksys.social_media_api.dtos.CredentialsDto;
 import com.cooksys.social_media_api.dtos.TweetRequestDto;
 import com.cooksys.social_media_api.dtos.TweetResponseDto;
 
@@ -13,4 +14,5 @@ public interface TweetService {
 
     TweetResponseDto replyToTweet(TweetRequestDto tweetRequestDto, Long id);
 
+    TweetResponseDto deleteTweet(CredentialsDto credentialsDto, Long id);
 }
