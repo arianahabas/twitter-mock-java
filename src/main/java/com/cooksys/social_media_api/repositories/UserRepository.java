@@ -13,8 +13,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     //Need to call embedded object for derived queries. (i.e. Credentials is the embedded object)
     boolean existsByCredentialsUsername(String username);
 
-
     List<User> findAllByDeletedFalse();
 
     Optional<User> findByCredentialsUsername(String username);
+
 }
