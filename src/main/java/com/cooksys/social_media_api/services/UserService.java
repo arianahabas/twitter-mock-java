@@ -9,4 +9,6 @@ public interface UserService {
     UserResponseDto createUser(UserRequestDto userRequestDto);
 
     List<UserResponseDto> getAllUsers();
+
+    UserResponseDto findByUsername(String username);
 }

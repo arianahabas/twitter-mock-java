@@ -32,7 +32,7 @@ public class TweetServiceImpl implements TweetService {
         Optional<Tweet> optionalTweet = tweetRepository.findById(id);
         if (optionalTweet.isPresent()) {
             Tweet tweet = optionalTweet.get();
-            if(tweet.isDeleted()){
+            if (tweet.isDeleted()) {
                 throw new BadRequestException("Tweet with id " + id + " has been deleted");
             }
             return tweetMapper.entityToResponseDto(tweet);
@@ -40,4 +40,5 @@ public class TweetServiceImpl implements TweetService {
             throw new NotFoundException("Tweet with id " + id + " not found");
         }
     }
+
 }

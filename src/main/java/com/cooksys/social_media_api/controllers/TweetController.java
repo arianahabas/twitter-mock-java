@@ -28,4 +28,6 @@ public class TweetController {
     public TweetResponseDto getTweetById(@PathVariable Long id){
         return tweetService.getTweetById(id);
     }
+
+
 }
