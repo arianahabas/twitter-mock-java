@@ -5,7 +5,7 @@ import com.cooksys.social_media_api.dtos.UserResponseDto;
 import com.cooksys.social_media_api.entities.Credentials;
 import com.cooksys.social_media_api.entities.Profile;
 import com.cooksys.social_media_api.entities.User;
-import com.cooksys.social_media_api.mappers.UserMapper;
+import com.cooksys.social_media_api.entities.mappers.UserMapper;
 import com.cooksys.social_media_api.repositories.UserRepository;
 import com.cooksys.social_media_api.services.UserService;
 
@@ -53,15 +53,9 @@ public class UserServiceImpl implements UserService {
         }
 
         //Validation check -> Duplication of username
-        /*
-        if(userRepository.existsByUsername(credentials.getUsername())){
+        if(userRepository.existsByCredentialsUsername(credentials.getUsername())){
             throw new BadRequestException("Username already exists");
         }
-
-         */
-
-
-
 
         return userMapper.entityToResponseDto(userRepository.saveAndFlush(user));
     }

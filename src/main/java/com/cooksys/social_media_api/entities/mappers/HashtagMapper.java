@@ -1,4 +1,4 @@
-package com.cooksys.social_media_api.mappers;
+package com.cooksys.social_media_api.entities.mappers;
 
 import java.util.List;
 
