@@ -8,5 +8,5 @@ import java.util.List;
 public interface HashtagService {
     List<HashtagDto> getAllHashtags();
 
-    List<TweetResponseDto> getAllTweetsTaggedWithGivenHashTageLabel(String label);
+    List<TweetResponseDto> getAllTweetsTaggedWithGivenHashTagLabel(String label);
 }
