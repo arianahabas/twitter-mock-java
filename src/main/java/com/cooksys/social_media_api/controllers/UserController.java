@@ -28,12 +28,12 @@ public class UserController {
     }
 
     @GetMapping("/@{username}")
-    public UserResponseDto getUser(@PathVariable String username) {
+    public UserResponseDto getUser(@PathVariable("username") String username) {
         return userService.findByUsername(username);
     }
     
     @GetMapping("/@{username}/followers")
-    public List<UserResponseDto> getFollowers(@PathVariable String username){
+    public List<UserResponseDto> getFollowers(@PathVariable("username") String username){
     	return userService.getFollowers(username);
     }
 }

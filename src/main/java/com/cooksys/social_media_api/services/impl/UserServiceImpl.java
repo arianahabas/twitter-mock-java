@@ -106,7 +106,7 @@ public class UserServiceImpl implements UserService {
     	 
     	 for(User u: user.getFollowers()) {
     		 if(!u.isDeleted()) {
-    			 followers.add(user);
+    			 followers.add(u);
     		 }
     	 }
     	 
