@@ -1,26 +1,25 @@
 package com.cooksys.social_media_api.services.impl;
 
+import com.cooksys.social_media_api.dtos.CredentialsDto;
 import com.cooksys.social_media_api.dtos.TweetRequestDto;
 import com.cooksys.social_media_api.dtos.TweetResponseDto;
+import com.cooksys.social_media_api.entities.Credentials;
 import com.cooksys.social_media_api.entities.Tweet;
-import com.cooksys.social_media_api.exceptions.BadRequestException;
 import com.cooksys.social_media_api.entities.User;
+import com.cooksys.social_media_api.exceptions.BadRequestException;
 import com.cooksys.social_media_api.exceptions.NotAuthorizedException;
 import com.cooksys.social_media_api.exceptions.NotFoundException;
+import com.cooksys.social_media_api.mappers.CredentialsMapper;
 import com.cooksys.social_media_api.mappers.TweetMapper;
 import com.cooksys.social_media_api.repositories.TweetRepository;
 import com.cooksys.social_media_api.repositories.UserRepository;
 import com.cooksys.social_media_api.services.TweetService;
-
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +28,7 @@ public class TweetServiceImpl implements TweetService {
     private final TweetRepository tweetRepository;
     private final TweetMapper tweetMapper;
     private final UserRepository userRepository;
+    private final CredentialsMapper credentialsMapper;
 
     @Override
     public List<TweetResponseDto> getAllTweets() {
@@ -114,6 +114,32 @@ public class TweetServiceImpl implements TweetService {
         }
 
         return tweetMapper.entityToResponseDto(tweetRepository.saveAndFlush(newReplyTweet));
+    }
+
+    @Override
+    public TweetResponseDto deleteTweet(CredentialsDto credentialsDto, Long id) {
+        Optional<Tweet> optionalTweet = tweetRepository.findById(id);
+        //check if the tweet with id exists
+        if (!optionalTweet.isPresent()) {
+            throw new NotFoundException("Tweet with id " + id + " does not exist");
+        }
+        Tweet tweet = optionalTweet.get();
+        User user = tweet.getAuthor();
+        Credentials credentialsOnTweet = user.getCredentials();
+        CredentialsDto credentialsDtoOnTweet = credentialsMapper.entityToDto(credentialsOnTweet);
+
+
+        //check if the tweets author matches the given credentials - throw error
+        if (!credentialsDto.getUsername().equals(credentialsDtoOnTweet.getUsername())) {
+            throw new BadRequestException("Tweet with id: " + id + " does not match with the given credentials");
+        }
+
+        //change deleted field in the tweet entity to true
+        tweet.setDeleted(true);
+        //do not delete from the database - only saved with new flag
+        tweetRepository.saveAndFlush(tweet);
+        //respond with the tweet data of successfully deleted tweet
+        return tweetMapper.entityToResponseDto(tweet);
     }
 
 }
