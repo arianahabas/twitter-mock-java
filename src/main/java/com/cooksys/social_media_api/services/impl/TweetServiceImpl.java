@@ -59,6 +59,15 @@ public class TweetServiceImpl implements TweetService {
         return tweet;
     }
 
+    public User validateAndGetUserByCredentials(CredentialsDto credentialsDto) {
+        Optional<User> optionalUser = userRepository.findByCredentialsUsernameAndCredentialsPasswordAndDeletedFalse(
+                credentialsDto.getUsername(), credentialsDto.getPassword());
+        if (optionalUser.isEmpty()) {
+            throw new NotFoundException("Invalid credentials or user does not exist.");
+        }
+        return optionalUser.get();
+    }
+
 
     @Override
     public TweetResponseDto createTweet(TweetRequestDto tweetRequestDto) {
@@ -254,14 +263,11 @@ public class TweetServiceImpl implements TweetService {
         return tweetMapper.entitiesToResponseDtos(reposts);
     }
 
+
+
     @Override
     public void likeTweet(CredentialsDto credentialsDto, Long id) {
-        Optional<User> optionalUser = userRepository.findByCredentialsUsernameAndCredentialsPasswordAndDeletedFalse(credentialsDto.getUsername(), credentialsDto.getPassword());
-        if (optionalUser.isEmpty()) {
-            throw new NotFoundException("Invalid credentials or user does not exist.");
-        }
-        User user = optionalUser.get();
-
+        User user = validateAndGetUserByCredentials(credentialsDto);
         Tweet tweet = validateAndGetTweetById(id);
         user.getLikedTweets().add(tweet);
         userRepository.saveAndFlush(user);
@@ -322,13 +328,21 @@ public class TweetServiceImpl implements TweetService {
     }
     
     @Override
-    public TweetResponseDto createRepost(Long id) {
-    	Tweet tweet = validateAndGetTweetById(id);
+    public TweetResponseDto createRepost(CredentialsDto credentialsDto, Long id) {
+    	Tweet originalTweet = validateAndGetTweetById(id);
+        User user = validateAndGetUserByCredentials(credentialsDto);
+
+        // Create a new repost tweet
         Tweet repostTweet = new Tweet();
-        repostTweet.setRepostOf(tweet);
-        repostTweet.setAuthor(tweet.getAuthor());
-        tweetRepository.saveAndFlush(repostTweet);
-    	return tweetMapper.entityToResponseDto(repostTweet);
+        repostTweet.setContent(""); // Reposts should not have content
+        repostTweet.setAuthor(user);
+        repostTweet.setRepostOf(originalTweet);
+
+        // Save the repost tweet
+        Tweet savedRepostTweet = tweetRepository.saveAndFlush(repostTweet);
+
+        // Return the newly created repost tweet in the response
+        return tweetMapper.entityToResponseDto(savedRepostTweet);
     }
     
     @Override
