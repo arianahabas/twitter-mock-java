@@ -335,27 +335,18 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDto deleteUser(String username) {
-        Optional<User> optionalUser = userRepository.findByCredentialsUsername(username);
-        if (!optionalUser.isPresent()) {
-            throw new NotFoundException("User with username: " + username + " not found");
+        Optional<User> userOptional = userRepository.findByCredentialsUsername(username);
+
+        if (!userOptional.isPresent() || userOptional.get().isDeleted()) {
+            throw new NotFoundException("User with username: " + username + " is not present");
         }
 
-        //creating deep copy
-        User user = new User();
-        user.setCredentials(optionalUser.get().getCredentials());
-        user.setFollowers(optionalUser.get().getFollowers());
-        user.setFollowing(optionalUser.get().getFollowing());
-        user.setId(optionalUser.get().getId());
-        user.setJoined(optionalUser.get().getJoined());
-        user.setLikedTweets(optionalUser.get().getLikedTweets());
-        user.setMentionedTweets(optionalUser.get().getMentionedTweets());
-        user.setProfile(optionalUser.get().getProfile());
-        user.setTweets(optionalUser.get().getTweets());
-        user.setDeleted(false);
+        User user = userOptional.get();
 
-        optionalUser.get().setDeleted(true);
-        userRepository.saveAndFlush(optionalUser.get());
+        user.setDeleted(true); // Mark user as deleted
+        userRepository.save(user);
 
+        // Convert and return user data prior to deletion
         return userMapper.entityToResponseDto(user);
     }
 
