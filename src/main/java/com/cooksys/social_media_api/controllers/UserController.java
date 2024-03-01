@@ -55,8 +55,8 @@ public class UserController {
     }
 
     @PostMapping("/@{username}/follow")
-    public void subscribesUser(@RequestBody UserRequestDto userRequestDto, @PathVariable("username") String username) {
-        userService.subscribeUser(userRequestDto, username);
+    public void subscribesUser(@RequestBody CredentialsDto credentialsDto, @PathVariable("username") String username) {
+        userService.subscribeUser(credentialsDto, username);
     }
 
     @PostMapping("/@{username}/unfollow")

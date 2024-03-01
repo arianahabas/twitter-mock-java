@@ -22,7 +22,7 @@ public interface UserService {
 
     UserResponseDto updateUserProfile(UserRequestDto userRequestDto, String username);
 
-    void subscribeUser(UserRequestDto userRequestDto, String username);
+    void subscribeUser(CredentialsDto credentialsDto, String username);
 
 	List<UserResponseDto> getFollowers(String username);
 
