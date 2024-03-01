@@ -32,7 +32,32 @@ public class UserController {
     public UserResponseDto getUser(@PathVariable("username") String username) {
         return userService.findByUsername(username);
     }
-    
+
+    @GetMapping("/@{username}/feed")
+    public List<TweetResponseDto> getAllUserFeed(@PathVariable("username") String username){
+        return userService.getAllUserFeed(username);
+    }
+
+    @GetMapping("/@{username}/mentions")
+    public List<TweetResponseDto> getAllUserMentionedTweets(@PathVariable("username") String username){
+        return userService.getAllUserMentionedTweets(username);
+    }
+
+    @GetMapping("/@{username}/following")
+    public List<UserResponseDto> getAllUsersFollowingProvidedUser(@PathVariable("username") String username){
+        return userService.getAllUsersFollowingProvidedUser(username);
+    }
+
+    @PatchMapping("/@{username}")
+    public UserResponseDto updateUserProfile(@RequestBody UserRequestDto userRequestDto, @PathVariable("username") String username){
+        return userService.updateUserProfile(userRequestDto, username);
+    }
+
+    @PostMapping("/@{username}/follow")
+    public void subscribesUser(@RequestBody UserRequestDto userRequestDto, @PathVariable("username") String username) {
+        userService.subscribeUser(userRequestDto, username);
+    }
+
     @GetMapping("/@{username}/followers")
     public List<UserResponseDto> getFollowers(@PathVariable("username") String username){
     	return userService.getFollowers(username);

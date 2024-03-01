@@ -100,21 +100,21 @@ public class TweetServiceImpl implements TweetService {
         //Tweet that is being replied to
         Optional<Tweet> toReplyTweet = tweetRepository.findById(id);
 
-        if(!toReplyTweet.isPresent() || toReplyTweet.get().isDeleted()){
+        if (!toReplyTweet.isPresent() || toReplyTweet.get().isDeleted()) {
             throw new NotFoundException("Tweet " + id + " not found");
         }
 
         //Validation check -> Making sure content is provided.
-        if(tweetRequestDto.getContent() == null){
+        if (tweetRequestDto.getContent() == null) {
             throw new BadRequestException("Content is required");
         }
 
         //Validation check -> Making sure all fields are provided in Credentials.
-        if(tweetRequestDto.getCredentials().getUsername() == null && tweetRequestDto.getCredentials().getPassword() == null){
+        if (tweetRequestDto.getCredentials().getUsername() == null && tweetRequestDto.getCredentials().getPassword() == null) {
             throw new NotAuthorizedException("Credentials are required");
         } else if (tweetRequestDto.getCredentials().getUsername() == null) {
             throw new NotAuthorizedException("Username is required");
-        } else if(tweetRequestDto.getCredentials().getPassword() == null){
+        } else if (tweetRequestDto.getCredentials().getPassword() == null) {
             throw new NotAuthorizedException("Password is required");
         }
 
@@ -124,15 +124,12 @@ public class TweetServiceImpl implements TweetService {
         TODO: Create a helper method to verify credentials
          */
         //Validation check -> if username exists
-        if(userApplyingToTweet.isEmpty()){
+        if (userApplyingToTweet.isEmpty()) {
             throw new BadRequestException("User does not exists");
         }
 
-        System.out.println("pass 1 " + tweetRequestDto.getCredentials().getPassword());
-        System.out.println("pass 2 " + userApplyingToTweet.get().getCredentials().getPassword());
-
         //Validation check -> password and username
-        if(!tweetRequestDto.getCredentials().getPassword().equals(userApplyingToTweet.get().getCredentials().getPassword())){
+        if (!tweetRequestDto.getCredentials().getPassword().equals(userApplyingToTweet.get().getCredentials().getPassword())) {
             throw new NotAuthorizedException("Password does not match");
         }
 
@@ -142,7 +139,6 @@ public class TweetServiceImpl implements TweetService {
         newReplyTweet.setAuthor(userApplyingToTweet.get());
         newReplyTweet.setContent(tweetRequestDto.getContent());
 
-
         /*
         TODO: Create a helper method to get @Username or #Hashtag
         Takes a content and checks if there are mentions or hashtags
@@ -150,19 +146,38 @@ public class TweetServiceImpl implements TweetService {
          */
         List<String> usernameMentioned = new ArrayList<>();
         List<String> hashtags = new ArrayList<>();
-        for(String word : tweetRequestDto.getContent().split("\s")){
-           if(word.contains("@")){
-              usernameMentioned.add(word);
-           }
-           if(word.contains("#")){
-               hashtags.add(word);
-           }
+        for (String word : tweetRequestDto.getContent().split("\s")) {
+            if (word.contains("@")) {
+                usernameMentioned.add(word);
+            }
+            if (word.contains("#")) {
+                hashtags.add(word);
+            }
         }
 
         return tweetMapper.entityToResponseDto(tweetRepository.saveAndFlush(newReplyTweet));
     }
 
     @Override
+    public List<TweetResponseDto> getAllTweetReplies(Long id) {
+        Optional<Tweet> tweet = tweetRepository.findById(id);
+        System.out.println(tweet.isEmpty());
+        System.out.println(!tweet.get().isDeleted());
+        if (tweet.isEmpty() || tweet.get().isDeleted()) {
+            throw new NotFoundException("Tweet does not exists");
+        }
+
+        List<Tweet> allTweets = tweet.get().getReplies();
+        List<Tweet> replyTweets = new ArrayList<>();
+
+        for (Tweet checkTweet : allTweets) {
+            if (!checkTweet.isDeleted()) {
+                replyTweets.add(checkTweet);
+            }
+        }
+        return tweetMapper.entitiesToResponseDtos(replyTweets);
+    }
+
     public TweetResponseDto deleteTweet(CredentialsDto credentialsDto, Long id) {
         Optional<Tweet> optionalTweet = tweetRepository.findById(id);
         //check if the tweet with id exists
@@ -253,8 +268,5 @@ public class TweetServiceImpl implements TweetService {
         user.getLikedTweets().add(tweet);
         userRepository.saveAndFlush(user);
 
-
     }
-
-
 }

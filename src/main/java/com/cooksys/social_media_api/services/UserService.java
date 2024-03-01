@@ -13,9 +13,21 @@ public interface UserService {
 
     UserResponseDto findByUsername(String username);
 
+<<<<<<< HEAD
+    List<TweetResponseDto> getAllUserFeed(String username);
+
+    List<TweetResponseDto> getAllUserMentionedTweets(String username);
+
+    List<UserResponseDto> getAllUsersFollowingProvidedUser(String username);
+
+    UserResponseDto updateUserProfile(UserRequestDto userRequestDto, String username);
+
+    void subscribeUser(UserRequestDto userRequestDto, String username);
+=======
 	List<UserResponseDto> getFollowers(String username);
 
     List<TweetResponseDto> getUserTweets(String username);
 
 	UserResponseDto deleteUser(String username);
+>>>>>>> master
 }
