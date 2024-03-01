@@ -1,5 +1,6 @@
 package com.cooksys.social_media_api.controllers;
 
+import com.cooksys.social_media_api.dtos.CredentialsDto;
 import com.cooksys.social_media_api.dtos.TweetResponseDto;
 import com.cooksys.social_media_api.dtos.UserRequestDto;
 import com.cooksys.social_media_api.dtos.UserResponseDto;
@@ -56,6 +57,11 @@ public class UserController {
     @PostMapping("/@{username}/follow")
     public void subscribesUser(@RequestBody UserRequestDto userRequestDto, @PathVariable("username") String username) {
         userService.subscribeUser(userRequestDto, username);
+    }
+
+    @PostMapping("/@{username}/unfollow")
+    public void unsubscribesUser(@RequestBody CredentialsDto credentialsDto, @PathVariable("username") String username) {
+        userService.unsubscribeUser(credentialsDto, username);
     }
 
     @GetMapping("/@{username}/followers")

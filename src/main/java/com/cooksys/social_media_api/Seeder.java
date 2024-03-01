@@ -13,8 +13,8 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class Seeder{
-/*
+public class Seeder implements CommandLineRunner {
+
     private final HashtagRepository hashtagRepository;
     private final TweetRepository tweetRepository;
     private final UserRepository userRepository;
@@ -273,5 +273,5 @@ public class Seeder{
         user1.setFollowers(followers_1);
         userRepository.saveAndFlush(user1);
     }
-*/
+
 }
