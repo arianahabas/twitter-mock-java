@@ -21,11 +21,6 @@ public class ValidateServiceImpl implements ValidateService {
 
     @Override
     public boolean validateHashtagExists(String label) {
-        // Append '#' symbol to the label if it doesn't start with '#'
-        if (!label.startsWith("#")) {
-            label = "#" + label;
-        }
-
         Optional<Hashtag> hashtagOptional = hashtagRepository.findByLabelIgnoreCase(label);
         return hashtagOptional.isPresent();
     }
