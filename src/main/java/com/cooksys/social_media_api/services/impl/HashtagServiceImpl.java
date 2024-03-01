@@ -46,8 +46,11 @@ public class HashtagServiceImpl implements HashtagService {
 
         //Find all hashtags
         for(Tweet tweet : allNonDeletedTweets){
-            if(tweet.getHashtags().contains(label)){
-                tweetsTagged.add(tweet);
+            String tagToSearch = "#" + label;
+            for(String searchingForLabel : tweet.getContent().split("\s")){
+                if(searchingForLabel.equals(tagToSearch)){
+                    tweetsTagged.add(tweet);
+                }
             }
         }
 
