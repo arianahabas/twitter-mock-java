@@ -3,6 +3,7 @@ package com.cooksys.social_media_api.services.impl;
 import com.cooksys.social_media_api.dtos.CredentialsDto;
 import com.cooksys.social_media_api.dtos.TweetRequestDto;
 import com.cooksys.social_media_api.dtos.TweetResponseDto;
+import com.cooksys.social_media_api.dtos.UserResponseDto;
 import com.cooksys.social_media_api.entities.Credentials;
 import com.cooksys.social_media_api.entities.Hashtag;
 import com.cooksys.social_media_api.entities.Tweet;
@@ -12,6 +13,7 @@ import com.cooksys.social_media_api.exceptions.NotAuthorizedException;
 import com.cooksys.social_media_api.exceptions.NotFoundException;
 import com.cooksys.social_media_api.mappers.CredentialsMapper;
 import com.cooksys.social_media_api.mappers.TweetMapper;
+import com.cooksys.social_media_api.mappers.UserMapper;
 import com.cooksys.social_media_api.repositories.HashtagRepository;
 import com.cooksys.social_media_api.repositories.TweetRepository;
 import com.cooksys.social_media_api.repositories.UserRepository;
@@ -30,6 +32,7 @@ public class TweetServiceImpl implements TweetService {
     private final TweetRepository tweetRepository;
     private final TweetMapper tweetMapper;
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
     private final CredentialsMapper credentialsMapper;
     private final HashtagRepository hashtagRepository;
     
@@ -183,6 +186,29 @@ public class TweetServiceImpl implements TweetService {
         tweetRepository.saveAndFlush(tweet);
         //respond with the tweet data of successfully deleted tweet
         return tweetMapper.entityToResponseDto(tweet);
+    }
+    
+    @Override
+    public List<UserResponseDto> getLikedBy(Long id){
+    	Optional<Tweet> optionalTweet = tweetRepository.findById(id);
+    	if(!optionalTweet.isPresent()) {
+    		throw new NotFoundException("Tweet with id " + id + " does not exist");
+    	}
+    	
+    	Tweet tweet = optionalTweet.get();
+    	
+    	if(tweet.isDeleted()) {
+    		throw new BadRequestException("Tweet with id " + id + " has been deleted");
+    	}
+    	
+    	List<User> users = new ArrayList();
+    	
+    	for(User u: tweet.getLikedByUsers()) {
+    		if(!u.isDeleted()) {
+    			users.add(u);
+    		}
+    	}
+    	return userMapper.entitiesToResponseDtos(users);
     }
 
 	
