@@ -22,4 +22,7 @@ public interface TweetService {
 	List<UserResponseDto> getLikedBy(Long id);
 
     void likeTweet(CredentialsDto credentialsDto, Long id);
+
+	List<UserResponseDto> getMentionedUsers(Long id);
+
 }

@@ -53,6 +53,11 @@ public class TweetController {
     public List<UserResponseDto> getLikedBy(@PathVariable Long id){
     	return tweetService.getLikedBy(id);
     }
+    
+    @GetMapping("/{id}/mentions")
+    public List<UserResponseDto> getMentionedUsers(@PathVariable Long id){
+    	return tweetService.getMentionedUsers(id);
+    }
 
     @PostMapping("/{id}/like")
     public void likeTweet(@PathVariable("id") Long id, @RequestBody CredentialsDto credentialsDto){
