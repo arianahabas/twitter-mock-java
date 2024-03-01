@@ -4,6 +4,7 @@ import com.cooksys.social_media_api.dtos.CredentialsDto;
 import com.cooksys.social_media_api.dtos.TweetRequestDto;
 import com.cooksys.social_media_api.dtos.TweetResponseDto;
 import com.cooksys.social_media_api.entities.Credentials;
+import com.cooksys.social_media_api.entities.Hashtag;
 import com.cooksys.social_media_api.entities.Tweet;
 import com.cooksys.social_media_api.entities.User;
 import com.cooksys.social_media_api.exceptions.BadRequestException;
@@ -11,6 +12,7 @@ import com.cooksys.social_media_api.exceptions.NotAuthorizedException;
 import com.cooksys.social_media_api.exceptions.NotFoundException;
 import com.cooksys.social_media_api.mappers.CredentialsMapper;
 import com.cooksys.social_media_api.mappers.TweetMapper;
+import com.cooksys.social_media_api.repositories.HashtagRepository;
 import com.cooksys.social_media_api.repositories.TweetRepository;
 import com.cooksys.social_media_api.repositories.UserRepository;
 import com.cooksys.social_media_api.services.TweetService;
@@ -29,6 +31,47 @@ public class TweetServiceImpl implements TweetService {
     private final TweetMapper tweetMapper;
     private final UserRepository userRepository;
     private final CredentialsMapper credentialsMapper;
+    private final HashtagRepository hashtagRepository;
+    
+    
+    @Override
+	public TweetResponseDto createTweet(TweetRequestDto tweetRequestDto) {
+    	Credentials credentials = credentialsMapper.dtoToEntity(tweetRequestDto.getCredentials());
+    	
+    	if (credentials == null) {
+    		throw new BadRequestException("Credentials are required");
+    	}
+    	
+    	if(!userRepository.existsByCredentialsUsername(credentials.getUsername())) {
+    		throw new BadRequestException("Invalid Author");
+    	}
+    	
+    	if(credentials.getUsername() == null) {
+    		throw new BadRequestException("Username required");
+    	}
+    	
+    	if(credentials.getPassword() == null) {
+    		throw new BadRequestException("Password Required");
+    	}
+    	
+    	Tweet tweet = tweetMapper.requestDtoToEntity(tweetRequestDto);
+    	
+    	if(tweet.getContent() == null) {
+    		throw new BadRequestException("Content cannot be empty");
+    	}
+    	//The above statements ensure that findByCredentialsUsername will always return an object
+    	User author = userRepository.findByCredentialsUsername(credentials.getUsername()).get();
+    	tweet.setAuthor(author);
+
+    	
+    	for(Hashtag h : tweet.getHashtags()) {
+    		hashtagRepository.saveAndFlush(h);
+    	}
+    	
+    	tweetRepository.saveAndFlush(tweet);
+    	return tweetMapper.entityToResponseDto(tweet);
+	}
+
 
     @Override
     public List<TweetResponseDto> getAllTweets() {
@@ -142,4 +185,5 @@ public class TweetServiceImpl implements TweetService {
         return tweetMapper.entityToResponseDto(tweet);
     }
 
+	
 }
