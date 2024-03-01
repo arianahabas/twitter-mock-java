@@ -54,7 +54,22 @@ public class UserController {
     }
 
     @PostMapping("/@{username}/follow")
-    public void subscribesUser(@RequestBody UserRequestDto userRequestDto, @PathVariable("username") String username){
+    public void subscribesUser(@RequestBody UserRequestDto userRequestDto, @PathVariable("username") String username) {
         userService.subscribeUser(userRequestDto, username);
+    }
+
+    @GetMapping("/@{username}/followers")
+    public List<UserResponseDto> getFollowers(@PathVariable("username") String username){
+    	return userService.getFollowers(username);
+    }
+
+    @GetMapping("@{username}/tweets")
+    public List<TweetResponseDto> getUserTweets(@PathVariable("username") String username){
+        return userService.getUserTweets(username);
+    }
+    
+    @DeleteMapping("@{username}")
+    public UserResponseDto deleteUser(@PathVariable("username") String username) {
+    	return userService.deleteUser(username);
     }
 }

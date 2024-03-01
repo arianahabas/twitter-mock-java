@@ -1,7 +1,9 @@
 package com.cooksys.social_media_api.controllers;
 
+import com.cooksys.social_media_api.dtos.CredentialsDto;
 import com.cooksys.social_media_api.dtos.TweetRequestDto;
 import com.cooksys.social_media_api.dtos.TweetResponseDto;
+import com.cooksys.social_media_api.dtos.UserResponseDto;
 import com.cooksys.social_media_api.services.TweetService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,6 +22,11 @@ import java.util.List;
 public class TweetController {
 
     private final TweetService tweetService;
+    
+    @PostMapping
+    public TweetResponseDto createTweet(@RequestBody TweetRequestDto tweetRequestDto){
+    	return tweetService.createTweet(tweetRequestDto);
+    }
 
     @GetMapping
     public List<TweetResponseDto> getAllTweets() {
@@ -27,7 +34,7 @@ public class TweetController {
     }
 
     @GetMapping("{id}")
-    public TweetResponseDto getTweetById(@PathVariable Long id) {
+    public TweetResponseDto getTweetById(@PathVariable("id")  Long id) {
         return tweetService.getTweetById(id);
     }
 
@@ -41,6 +48,24 @@ public class TweetController {
         return tweetService.getAllTweetReplies(id);
     }
 
+    @DeleteMapping("{id}")
+    public TweetResponseDto deleteTweet(@RequestBody CredentialsDto credentialsDto, @PathVariable("id") Long id){
+        return tweetService.deleteTweet(credentialsDto, id);
+    }
+    
+    @GetMapping("/{id}/likes")
+    public List<UserResponseDto> getLikedBy(@PathVariable("id") Long id){
+    	return tweetService.getLikedBy(id);
+    }
+    
+    @GetMapping("/{id}/mentions")
+    public List<UserResponseDto> getMentionedUsers(@PathVariable("id")  Long id){
+    	return tweetService.getMentionedUsers(id);
+    }
 
+    @PostMapping("/{id}/like")
+    public void likeTweet(@PathVariable("id") Long id, @RequestBody CredentialsDto credentialsDto){
+       tweetService.likeTweet(credentialsDto, id);
+    }
 
 }

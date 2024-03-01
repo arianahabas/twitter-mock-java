@@ -11,20 +11,19 @@ import com.cooksys.social_media_api.entities.User;
 import com.cooksys.social_media_api.exceptions.NotAuthorizedException;
 import com.cooksys.social_media_api.exceptions.NotFoundException;
 import com.cooksys.social_media_api.mappers.ProfileMapper;
+import com.cooksys.social_media_api.exceptions.BadRequestException;
 import com.cooksys.social_media_api.mappers.TweetMapper;
 import com.cooksys.social_media_api.mappers.UserMapper;
 import com.cooksys.social_media_api.repositories.TweetRepository;
 import com.cooksys.social_media_api.repositories.UserRepository;
 import com.cooksys.social_media_api.services.UserService;
-
-import com.cooksys.social_media_api.exceptions.BadRequestException;
 import lombok.RequiredArgsConstructor;
 
-import org.mapstruct.control.MappingControl;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -162,6 +161,31 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<UserResponseDto> getFollowers(String username) {
+        Optional<User> optionalUser = userRepository.findByCredentialsUsername(username);
+
+        if (!optionalUser.isPresent()) {
+            throw new NotFoundException("User with username: " + username + " not found");
+        }
+
+        User user = optionalUser.get();
+
+        if (user.isDeleted()) {
+            throw new BadRequestException("User with username: " + username + " has been deleted");
+        }
+
+        List<User> followers = new ArrayList<>();
+
+        for (User u : user.getFollowers()) {
+            if (!u.isDeleted()) {
+                followers.add(u);
+            }
+        }
+
+        return userMapper.entitiesToResponseDtos(followers);
+    }
+
+    @Override
     public List<TweetResponseDto> getAllUserFeed(String username) {
         //Validation check -> Checking if user exist
         Optional<User> user = activeUserCheck(username);
@@ -266,10 +290,10 @@ public class UserServiceImpl implements UserService {
 
         User userToBeChecked = userMapper.requestDtoToEntity(userRequestDto);
 
-        for(User c : currentFollowers){
-            if(c.getCredentials().getUsername().compareTo(userToBeChecked.getCredentials().getUsername()) < 0){
+        for (User c : currentFollowers) {
+            if (c.getCredentials().getUsername().compareTo(userToBeChecked.getCredentials().getUsername()) < 0) {
                 System.out.println("Enter into compare " + userToBeChecked.getCredentials().getUsername());
-            }else {
+            } else {
                 System.out.println("Doesn'enter " + userToBeChecked.getCredentials().getUsername());
             }
         }
@@ -283,5 +307,44 @@ public class UserServiceImpl implements UserService {
         } else {
             throw new BadRequestException("Already following");
         }
+    }
+
+    public List<TweetResponseDto> getUserTweets(String username) {
+        Optional<User> optionalUser = userRepository.findByCredentialsUsername(username);
+        if (!optionalUser.isPresent()) {
+            throw new NotFoundException("User with username: " + username + " not found");
+        }
+        User user = optionalUser.get();
+
+        if (user.isDeleted()) {
+            throw new BadRequestException("User with username: " + username + " has been deleted");
+        }
+        return tweetMapper.entitiesToResponseDtos(user.getTweets());
+
+    }
+
+    @Override
+    public UserResponseDto deleteUser(String username) {
+        Optional<User> optionalUser = userRepository.findByCredentialsUsername(username);
+        if (!optionalUser.isPresent()) {
+            throw new NotFoundException("User with username: " + username + " not found");
+        }
+
+        //creating deep copy
+        User user = new User();
+        user.setCredentials(optionalUser.get().getCredentials());
+        user.setFollowers(optionalUser.get().getFollowers());
+        user.setFollowing(optionalUser.get().getFollowing());
+        user.setId(optionalUser.get().getId());
+        user.setJoined(optionalUser.get().getJoined());
+        user.setLikedTweets(optionalUser.get().getLikedTweets());
+        user.setMentionedTweets(optionalUser.get().getMentionedTweets());
+        user.setProfile(optionalUser.get().getProfile());
+        user.setTweets(optionalUser.get().getTweets());
+        user.setDeleted(false);
+
+        optionalUser.get().setDeleted(true);
+
+        return userMapper.entityToResponseDto(user);
     }
 }

@@ -1,26 +1,29 @@
 package com.cooksys.social_media_api.services.impl;
 
+import com.cooksys.social_media_api.dtos.CredentialsDto;
 import com.cooksys.social_media_api.dtos.TweetRequestDto;
 import com.cooksys.social_media_api.dtos.TweetResponseDto;
+import com.cooksys.social_media_api.dtos.UserResponseDto;
+import com.cooksys.social_media_api.entities.Credentials;
+import com.cooksys.social_media_api.entities.Hashtag;
 import com.cooksys.social_media_api.entities.Tweet;
-import com.cooksys.social_media_api.exceptions.BadRequestException;
 import com.cooksys.social_media_api.entities.User;
+import com.cooksys.social_media_api.exceptions.BadRequestException;
 import com.cooksys.social_media_api.exceptions.NotAuthorizedException;
 import com.cooksys.social_media_api.exceptions.NotFoundException;
+import com.cooksys.social_media_api.mappers.CredentialsMapper;
 import com.cooksys.social_media_api.mappers.TweetMapper;
+import com.cooksys.social_media_api.mappers.UserMapper;
+import com.cooksys.social_media_api.repositories.HashtagRepository;
 import com.cooksys.social_media_api.repositories.TweetRepository;
 import com.cooksys.social_media_api.repositories.UserRepository;
 import com.cooksys.social_media_api.services.TweetService;
-
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +32,49 @@ public class TweetServiceImpl implements TweetService {
     private final TweetRepository tweetRepository;
     private final TweetMapper tweetMapper;
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
+    private final CredentialsMapper credentialsMapper;
+    private final HashtagRepository hashtagRepository;
+    
+    
+    @Override
+	public TweetResponseDto createTweet(TweetRequestDto tweetRequestDto) {
+    	Credentials credentials = credentialsMapper.dtoToEntity(tweetRequestDto.getCredentials());
+    	
+    	if (credentials == null) {
+    		throw new BadRequestException("Credentials are required");
+    	}
+    	
+    	if(!userRepository.existsByCredentialsUsername(credentials.getUsername())) {
+    		throw new BadRequestException("Invalid Author");
+    	}
+    	
+    	if(credentials.getUsername() == null) {
+    		throw new BadRequestException("Username required");
+    	}
+    	
+    	if(credentials.getPassword() == null) {
+    		throw new BadRequestException("Password Required");
+    	}
+    	
+    	Tweet tweet = tweetMapper.requestDtoToEntity(tweetRequestDto);
+    	
+    	if(tweet.getContent() == null) {
+    		throw new BadRequestException("Content cannot be empty");
+    	}
+    	//The above statements ensure that findByCredentialsUsername will always return an object
+    	User author = userRepository.findByCredentialsUsername(credentials.getUsername()).get();
+    	tweet.setAuthor(author);
+
+    	
+    	for(Hashtag h : tweet.getHashtags()) {
+    		hashtagRepository.saveAndFlush(h);
+    	}
+    	
+    	tweetRepository.saveAndFlush(tweet);
+    	return tweetMapper.entityToResponseDto(tweet);
+	}
+
 
     @Override
     public List<TweetResponseDto> getAllTweets() {
@@ -132,4 +178,95 @@ public class TweetServiceImpl implements TweetService {
         return tweetMapper.entitiesToResponseDtos(replyTweets);
     }
 
+    public TweetResponseDto deleteTweet(CredentialsDto credentialsDto, Long id) {
+        Optional<Tweet> optionalTweet = tweetRepository.findById(id);
+        //check if the tweet with id exists
+        if (!optionalTweet.isPresent()) {
+            throw new NotFoundException("Tweet with id " + id + " does not exist");
+        }
+        Tweet tweet = optionalTweet.get();
+        if(tweet.isDeleted()){
+            throw new BadRequestException("Tweet with id: " + id + " is deleted");
+        }
+        User user = tweet.getAuthor();
+        Credentials credentialsOnTweet = user.getCredentials();
+        CredentialsDto credentialsDtoOnTweet = credentialsMapper.entityToDto(credentialsOnTweet);
+
+
+        //check if the tweets author matches the given credentials - throw error
+        if (!credentialsDto.getUsername().equals(credentialsDtoOnTweet.getUsername())) {
+            throw new BadRequestException("Tweet with id: " + id + " does not match with the given credentials");
+        }
+
+        //change deleted field in the tweet entity to true
+        tweet.setDeleted(true);
+        //do not delete from the database - only saved with new flag
+        tweetRepository.saveAndFlush(tweet);
+        //respond with the tweet data of successfully deleted tweet
+        return tweetMapper.entityToResponseDto(tweet);
+    }
+    
+    @Override
+    public List<UserResponseDto> getLikedBy(Long id){
+    	Optional<Tweet> optionalTweet = tweetRepository.findById(id);
+    	if(!optionalTweet.isPresent()) {
+    		throw new NotFoundException("Tweet with id " + id + " does not exist");
+    	}
+    	
+    	Tweet tweet = optionalTweet.get();
+    	
+    	if(tweet.isDeleted()) {
+    		throw new BadRequestException("Tweet with id " + id + " has been deleted");
+    	}
+    	
+    	List<User> users = new ArrayList<>();
+    	
+    	for(User u: tweet.getLikedByUsers()) {
+    		if(!u.isDeleted()) {
+    			users.add(u);
+    		}
+    	}
+    	return userMapper.entitiesToResponseDtos(users);
+    }
+    
+    @Override
+    public List<UserResponseDto> getMentionedUsers(Long id){
+    	Optional<Tweet> optionalTweet = tweetRepository.findById(id);
+    	if(!optionalTweet.isPresent()) {
+    		throw new NotFoundException("Tweet with id " + id + " does not exist");
+    	}
+    	
+    	Tweet tweet = optionalTweet.get();
+    	
+    	if(tweet.isDeleted()) {
+    		throw new BadRequestException("Tweet with id " + id + " has been deleted");
+    	}
+    	
+    	List<User> users = new ArrayList<>();
+    	
+    	for(User u: tweet.getMentionedUsers()) {
+    		if(!u.isDeleted()) {
+    			users.add(u);
+    		}
+    	}
+    	return userMapper.entitiesToResponseDtos(users);
+    }
+
+    @Override
+    public void likeTweet(CredentialsDto credentialsDto, Long id) {
+        Optional<User> optionalUser = userRepository.findByCredentialsUsernameAndCredentialsPasswordAndDeletedFalse(credentialsDto.getUsername(), credentialsDto.getPassword());
+        if(!optionalUser.isPresent()){
+            throw new NotFoundException("Invalid credentials or user does not exist.");
+        }
+        User user = optionalUser.get();
+
+        Optional<Tweet> optionalTweet = tweetRepository.findById(id);
+        if(!optionalTweet.isPresent()){
+            throw new NotFoundException("Tweet with id " + id + " does not exist");
+        }
+        Tweet tweet = optionalTweet.get();
+        user.getLikedTweets().add(tweet);
+        userRepository.saveAndFlush(user);
+
+    }
 }
