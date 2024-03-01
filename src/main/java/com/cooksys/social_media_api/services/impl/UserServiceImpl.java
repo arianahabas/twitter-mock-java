@@ -138,18 +138,25 @@ public class UserServiceImpl implements UserService {
         //Validation check -> Duplication of username
         Optional<User> userCheck = userRepository.findByCredentialsUsername(credentials.getUsername());
 
+        //TODO: Need to figure out why it is not creating a second user and a deleted user
+
         if(userCheck.isPresent()){
             if (userCheck.get().isDeleted()){
+                User reviveDeletedUser = userCheck.get();
+                reviveDeletedUser.setDeleted(false);
+                reviveDeletedUser.getCredentials().setPassword(credentials.getPassword());
+                return userMapper.entityToResponseDto(userRepository.saveAndFlush(reviveDeletedUser));
+                /*
                 System.out.println("Enters into function");
                 user.setDeleted(false);
                 user.getCredentials().setPassword(credentials.getPassword());
                 user.setProfile(profile);
+
+                 */
             }else if (userRepository.existsByCredentialsUsername(userRequestDto.getCredentials().getUsername())) {
                 throw new BadRequestException("Username already exists");
             }
         }
-
-
 
         return userMapper.entityToResponseDto(userRepository.saveAndFlush(user));
     }
@@ -300,29 +307,22 @@ public class UserServiceImpl implements UserService {
         //Validation check -> Checking credentials
         credentialsCheck(userRequestDto);
 
+        //Gets all the followers from the provided username
         List<User> currentFollowers = userToBeFollowed.get().getFollowing();
 
+        //Removes all the deleted followers
         currentFollowers.removeIf(User::isDeleted);
 
-        User userToBeChecked = userMapper.requestDtoToEntity(userRequestDto);
-
-        for (User c : currentFollowers) {
-            if (c.getCredentials().getUsername().compareTo(userToBeChecked.getCredentials().getUsername()) < 0) {
-                System.out.println("Enter into compare " + userToBeChecked.getCredentials().getUsername());
-            } else {
-                System.out.println("Doesn'enter " + userToBeChecked.getCredentials().getUsername());
+        for(User followingUser : currentFollowers){
+            if(followingUser.getCredentials().equals(userRequestDto.getCredentials().getUsername())){
+                break;
             }
+            currentFollowers.add(followingUser);
         }
 
+        userToBeFollowed.get().setFollowers(currentFollowers);
 
-        if (!currentFollowers.contains(userToBeChecked)) {
-            System.out.println("Enters in with " + userRequestDto.getCredentials().getUsername());
-            currentFollowers.add(userMapper.requestDtoToEntity(userRequestDto));
-            userToBeFollowed.get().setFollowing(currentFollowers);
-            userRepository.saveAndFlush(userToBeFollowed.get());
-        } else {
-            throw new BadRequestException("Already following");
-        }
+        userMapper.entityToResponseDto(userRepository.saveAndFlush(userToBeFollowed.get()));
     }
 
     public List<TweetResponseDto> getUserTweets(String username) {
