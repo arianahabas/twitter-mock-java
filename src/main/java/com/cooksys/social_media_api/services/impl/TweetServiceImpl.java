@@ -201,9 +201,32 @@ public class TweetServiceImpl implements TweetService {
     		throw new BadRequestException("Tweet with id " + id + " has been deleted");
     	}
     	
-    	List<User> users = new ArrayList();
+    	List<User> users = new ArrayList<>();
     	
     	for(User u: tweet.getLikedByUsers()) {
+    		if(!u.isDeleted()) {
+    			users.add(u);
+    		}
+    	}
+    	return userMapper.entitiesToResponseDtos(users);
+    }
+    
+    @Override
+    public List<UserResponseDto> getMentionedUsers(Long id){
+    	Optional<Tweet> optionalTweet = tweetRepository.findById(id);
+    	if(!optionalTweet.isPresent()) {
+    		throw new NotFoundException("Tweet with id " + id + " does not exist");
+    	}
+    	
+    	Tweet tweet = optionalTweet.get();
+    	
+    	if(tweet.isDeleted()) {
+    		throw new BadRequestException("Tweet with id " + id + " has been deleted");
+    	}
+    	
+    	List<User> users = new ArrayList<>();
+    	
+    	for(User u: tweet.getMentionedUsers()) {
     		if(!u.isDeleted()) {
     			users.add(u);
     		}
