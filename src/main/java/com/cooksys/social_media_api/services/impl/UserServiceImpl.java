@@ -296,29 +296,30 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void subscribeUser(UserRequestDto userRequestDto, String username) {
-        //Validation check -> Checking if user exist
-        Optional<User> userToBeFollowed = activeUserCheck(username);
+    public void subscribeUser(CredentialsDto credentialsDto, String username) {
 
-        //Validation check -> Checking credentials
-        credentialsCheck(userRequestDto);
+        Optional<User> optionalUserToFollow = userRepository.findByCredentialsUsernameAndDeletedFalse(username);
+        if (!optionalUserToFollow.isPresent()) {
+            throw new NotFoundException("User " + username + " does not exist or has been deleted.");
+        }
+        User userToFollow = optionalUserToFollow.get();
 
-        //Gets all the followers from the provided username
-        List<User> currentFollowers = userToBeFollowed.get().getFollowing();
 
-        //Removes all the deleted followers
-        currentFollowers.removeIf(User::isDeleted);
 
-        for(User followingUser : currentFollowers){
-            if(followingUser.getCredentials().getUsername().equals(userRequestDto.getCredentials().getUsername())){
-                break;
-            }
-            currentFollowers.add(followingUser);
+        Optional<User> optionalRequester = userRepository.findByCredentialsUsernameAndCredentialsPasswordAndDeletedFalse(credentialsDto.getUsername(), credentialsDto.getPassword());
+        if (!optionalRequester.isPresent()) {
+            throw new NotFoundException("Invalid credentials or user does not exist.");
+        }
+        User requester = optionalRequester.get();
+
+
+        if (requester.getFollowers().contains(userToFollow)) {
+            throw new NotFoundException("Already following ");
         }
 
-        userToBeFollowed.get().setFollowers(currentFollowers);
+        requester.getFollowers().add(userToFollow);
 
-        userMapper.entityToResponseDto(userRepository.saveAndFlush(userToBeFollowed.get()));
+        userRepository.saveAndFlush(requester);
     }
 
     public List<TweetResponseDto> getUserTweets(String username) {

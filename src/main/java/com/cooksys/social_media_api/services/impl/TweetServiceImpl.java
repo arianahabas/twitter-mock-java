@@ -1,9 +1,6 @@
 package com.cooksys.social_media_api.services.impl;
 
-import com.cooksys.social_media_api.dtos.CredentialsDto;
-import com.cooksys.social_media_api.dtos.TweetRequestDto;
-import com.cooksys.social_media_api.dtos.TweetResponseDto;
-import com.cooksys.social_media_api.dtos.UserResponseDto;
+import com.cooksys.social_media_api.dtos.*;
 import com.cooksys.social_media_api.entities.Credentials;
 import com.cooksys.social_media_api.entities.Hashtag;
 import com.cooksys.social_media_api.entities.Tweet;
@@ -21,9 +18,12 @@ import com.cooksys.social_media_api.services.TweetService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -285,31 +285,61 @@ public class TweetServiceImpl implements TweetService {
 
     }
 
-    @Override
-    public List<TweetResponseDto> getAllTweetsWithContext(Long id) {
-        //Validation check -> checking if tweet exists
-        Optional<Tweet> tweet = tweetRepository.findById(id);
-        if (tweet.isEmpty() || tweet.get().isDeleted()) {
-            throw new BadRequestException("Tweet does not exists");
-        }
-        List<Tweet> repliesFromTweet = tweet.get().getReplies();
+    /**
+     * Gathers replies to a given tweet, categorizing them as before or after the target tweet's posting time.
+     * @param tweet The target tweet for which replies are being gathered.
+     * @param targetTime The posting time of the target tweet to compare replies against.
+     * @param before A list of replies posted before the target tweet.
+     * @param after A list of replies posted after the target tweet.
+     */
+    private void gatherReplies(Tweet tweet, Timestamp targetTime, List<TweetResponseDto> before, List<TweetResponseDto> after) {
+        // Iterate over all replies to the current tweet
+        for (Tweet reply : tweet.getReplies()) {
+            // Skip any replies that are marked as deleted
+            if (!reply.isDeleted()) {
+                // Convert the reply to a DTO for inclusion in the response
+                TweetResponseDto replyDto = tweetMapper.entityToResponseDto(reply);
 
-        for (Tweet tweetCheck : repliesFromTweet) {
-            if (!tweetCheck.isDeleted()) {
-                repliesFromTweet.add(tweetCheck);
-            }
-            if (tweetCheck.isDeleted()) {
-                /*
-                while (repliesFromTweet.isEmpty()) {
-                    List<Tweet> repliesOfDeletedTweet = tweetCheck.getReplies();
-                    for (Tweet tweetDeletedCheck : repliesOfDeletedTweet) {
-                        tweetDeletedCheck.
-                    }
+                // If the reply was posted before the target tweet, add it to the before list
+                if (reply.getPosted().before(targetTime)) {
+                    before.add(replyDto);
                 }
-
-                 */
+                // If the reply was posted after the target tweet, add it to the after list
+                else if (reply.getPosted().after(targetTime)) {
+                    after.add(replyDto);
+                }
+                // Gather replies to this reply, using the same target time
+                gatherReplies(reply, targetTime, before, after);
             }
         }
-        return tweetMapper.entitiesToResponseDtos(repliesFromTweet);
+    }
+
+    @Override
+    public ContextDto getTweetContext(Long id) {
+        // Attempt to find the target tweet by ID, excluding deleted tweets
+        Optional<Tweet> optionalTargetTweet = tweetRepository.findByIdAndDeletedFalse(id);
+        if (!optionalTargetTweet.isPresent()) {
+            throw new NotFoundException("Tweet with id " + id + " does not exist");
+        }
+        Tweet targetTweet = optionalTargetTweet.get();
+
+        // Initialize the context DTO and set the target tweet
+        ContextDto context = new ContextDto();
+        context.setTarget(tweetMapper.entityToResponseDto(targetTweet));
+
+        // Lists to hold replies before and after the target tweet
+        List<TweetResponseDto> before = new ArrayList<>();
+        List<TweetResponseDto> after = new ArrayList<>();
+
+        // Gather all relevant replies, categorizing them as before or after the target tweet
+        gatherReplies(targetTweet, targetTweet.getPosted(), before, after);
+
+        // Set the before and after lists in the context DTO
+        context.setBefore(before);
+        context.setAfter(after);
+
+        // Return the fully populated context DTO
+        return context;
+
     }
 }
