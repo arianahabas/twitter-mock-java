@@ -253,6 +253,21 @@ public class TweetServiceImpl implements TweetService {
     }
 
     @Override
+    public List<TweetResponseDto> getTweetReposts(Long id) {
+        // Verify the original tweet exists and is not deleted
+        if (!tweetRepository.existsByIdAndDeletedFalse(id)) {
+            throw new NotFoundException("Tweet with id " + id + " does not exist or has been deleted");
+        }
+
+        // query for non-deleted reposts of the tweet
+        List<Tweet> reposts = tweetRepository.findByRepostOfIdAndDeletedFalse(id);
+
+        // Convert the reposts to DTOs
+        List<TweetResponseDto> result = tweetMapper.entitiesToResponseDtos(reposts);
+        return result;
+    }
+
+    @Override
     public void likeTweet(CredentialsDto credentialsDto, Long id) {
         Optional<User> optionalUser = userRepository.findByCredentialsUsernameAndCredentialsPasswordAndDeletedFalse(credentialsDto.getUsername(), credentialsDto.getPassword());
         if(!optionalUser.isPresent()){
@@ -268,10 +283,6 @@ public class TweetServiceImpl implements TweetService {
         user.getLikedTweets().add(tweet);
         userRepository.saveAndFlush(user);
 
-    }
-    @Override
-    public List<TweetResponseDto> getAllReposts(Long id) {
-        return null;
     }
 
     @Override
