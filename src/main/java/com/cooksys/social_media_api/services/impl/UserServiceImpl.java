@@ -79,6 +79,10 @@ public class UserServiceImpl implements UserService {
      * @param userRequestDto provided by the user
      */
     public void credentialsCheck(UserRequestDto userRequestDto) {
+        //Validation check -> Making sure credentials are provided.
+        if(userRequestDto.getCredentials() == null){
+            throw new NotAuthorizedException("Credentials are required");
+        }
         //Validation check -> Making sure all fields are provided in Credentials.
         if (userRequestDto.getCredentials().getUsername() == null && userRequestDto.getCredentials().getPassword() == null) {
             throw new NotAuthorizedException("Credentials are required");
@@ -253,6 +257,7 @@ public class UserServiceImpl implements UserService {
 
         //Validation check -> Credentials are correct
         credentialsCheck(userRequestDto);
+
 
         //Validation check -> Making sure profile exists
         if (userRequestDto.getProfile() == null) {
