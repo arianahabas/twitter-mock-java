@@ -68,6 +68,9 @@ public class TweetController {
        tweetService.likeTweet(credentialsDto, id);
     }
 
+    //TODO: Need to implement these last two endpoints
+    //Commented out because you will run into some errors if left unimplemented.
+/*
     @GetMapping("/{id}/reposts")
     public List<TweetResponseDto> getAllReposts(@PathVariable("id") Long id){
         return tweetService.getAllReposts(id);
@@ -77,5 +80,8 @@ public class TweetController {
     public List<TweetResponseDto> getAllTweetsWithContext(@PathVariable("id") Long id){
         return tweetService.getAllTweetsWithContext(id);
     }
+
+
+ */
 
 }
