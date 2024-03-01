@@ -22,6 +22,11 @@ import java.util.List;
 public class TweetController {
 
     private final TweetService tweetService;
+    
+    @PostMapping
+    public TweetResponseDto createTweet(@RequestBody TweetRequestDto tweetRequestDto){
+    	return tweetService.createTweet(tweetRequestDto);
+    }
 
     @GetMapping
     public List<TweetResponseDto> getAllTweets() {
