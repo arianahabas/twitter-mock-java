@@ -170,6 +170,9 @@ public class TweetServiceImpl implements TweetService {
             throw new NotFoundException("Tweet with id " + id + " does not exist");
         }
         Tweet tweet = optionalTweet.get();
+        if(tweet.isDeleted()){
+            throw new BadRequestException("Tweet with id: " + id + " is deleted");
+        }
         User user = tweet.getAuthor();
         Credentials credentialsOnTweet = user.getCredentials();
         CredentialsDto credentialsDtoOnTweet = credentialsMapper.entityToDto(credentialsOnTweet);
@@ -234,5 +237,24 @@ public class TweetServiceImpl implements TweetService {
     	return userMapper.entitiesToResponseDtos(users);
     }
 
-	
+    @Override
+    public void likeTweet(CredentialsDto credentialsDto, Long id) {
+        Optional<User> optionalUser = userRepository.findByCredentialsUsernameAndCredentialsPasswordAndDeletedFalse(credentialsDto.getUsername(), credentialsDto.getPassword());
+        if(!optionalUser.isPresent()){
+            throw new NotFoundException("Invalid credentials or user does not exist.");
+        }
+        User user = optionalUser.get();
+
+        Optional<Tweet> optionalTweet = tweetRepository.findById(id);
+        if(!optionalTweet.isPresent()){
+            throw new NotFoundException("Tweet with id " + id + " does not exist");
+        }
+        Tweet tweet = optionalTweet.get();
+        user.getLikedTweets().add(tweet);
+        userRepository.saveAndFlush(user);
+
+
+    }
+
+
 }

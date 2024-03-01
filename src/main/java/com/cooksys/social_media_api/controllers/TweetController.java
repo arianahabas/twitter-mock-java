@@ -59,5 +59,9 @@ public class TweetController {
     	return tweetService.getMentionedUsers(id);
     }
 
+    @PostMapping("/{id}/like")
+    public void likeTweet(@PathVariable("id") Long id, @RequestBody CredentialsDto credentialsDto){
+       tweetService.likeTweet(credentialsDto, id);
+    }
 
 }
