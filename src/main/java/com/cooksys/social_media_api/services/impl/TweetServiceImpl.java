@@ -77,8 +77,28 @@ public class TweetServiceImpl implements TweetService {
         tweet.setAuthor(author);
 
 
-        for (Hashtag h : tweet.getHashtags()) {
-            hashtagRepository.saveAndFlush(h);
+        String content[] = tweet.getContent().split("\\s+");
+        
+        for(int x = 0; x < content.length; x++) {
+        	if(content[x].charAt(0) == '#') {
+        		if(hashtagRepository.findByLabelIgnoreCase(content[x].substring(1)).isPresent()) {
+        			hashtagRepository.findByLabelIgnoreCase(content[x].substring(1)).get().getTweets().add(tweet);
+        		}
+        		else {
+	        		Hashtag hashtag = new Hashtag();
+	        		hashtag.setLabel(content[x].substring(1));
+	        		hashtag.getTweets().add(tweet);
+	        		tweet.getHashtags().add(hashtag);
+	        		hashtagRepository.saveAndFlush(hashtag);
+        		}
+        	}
+        	
+        	List<User> mentionedUsers = new ArrayList<>();
+        	if(content[x].charAt(0) == '@') {
+        		User user = userRepository.findByCredentialsUsername(content[x].substring(1)).get();
+        		tweet.getMentionedUsers().add(user);
+        		
+        	}
         }
 
         tweetRepository.saveAndFlush(tweet);
