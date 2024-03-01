@@ -1,6 +1,14 @@
 package com.cooksys.social_media_api.services.impl;
 
+
 import com.cooksys.social_media_api.dtos.*;
+
+import com.cooksys.social_media_api.dtos.CredentialsDto;
+import com.cooksys.social_media_api.dtos.HashtagDto;
+import com.cooksys.social_media_api.dtos.TweetRequestDto;
+import com.cooksys.social_media_api.dtos.TweetResponseDto;
+import com.cooksys.social_media_api.dtos.UserResponseDto;
+
 import com.cooksys.social_media_api.entities.Credentials;
 import com.cooksys.social_media_api.entities.Hashtag;
 import com.cooksys.social_media_api.entities.Tweet;
@@ -9,6 +17,7 @@ import com.cooksys.social_media_api.exceptions.BadRequestException;
 import com.cooksys.social_media_api.exceptions.NotAuthorizedException;
 import com.cooksys.social_media_api.exceptions.NotFoundException;
 import com.cooksys.social_media_api.mappers.CredentialsMapper;
+import com.cooksys.social_media_api.mappers.HashtagMapper;
 import com.cooksys.social_media_api.mappers.TweetMapper;
 import com.cooksys.social_media_api.mappers.UserMapper;
 import com.cooksys.social_media_api.repositories.HashtagRepository;
@@ -35,6 +44,7 @@ public class TweetServiceImpl implements TweetService {
     private final UserMapper userMapper;
     private final CredentialsMapper credentialsMapper;
     private final HashtagRepository hashtagRepository;
+    private final HashtagMapper hashtagMapper;
 
 
     @Override
@@ -341,5 +351,42 @@ public class TweetServiceImpl implements TweetService {
         // Return the fully populated context DTO
         return context;
 
+    }
+    
+    @Override
+    public TweetResponseDto createRepost(Long id) {
+    	Optional<Tweet> optionalTweet = tweetRepository.findById(id);
+        if (!optionalTweet.isPresent()) {
+            throw new NotFoundException("Tweet with id " + id + " does not exist");
+        }
+
+        Tweet tweet = optionalTweet.get();
+
+        if (tweet.isDeleted()) {
+            throw new BadRequestException("Tweet with id " + id + " has been deleted");
+        }
+        
+        Tweet repostTweet = new Tweet();
+        
+        repostTweet.setRepostOf(tweet);
+        repostTweet.setAuthor(tweet.getAuthor());
+        tweetRepository.saveAndFlush(repostTweet);
+    	return tweetMapper.entityToResponseDto(repostTweet);
+    }
+    
+    @Override
+    public List<HashtagDto> getHashtags(Long id){
+    	Optional<Tweet> optionalTweet = tweetRepository.findById(id);
+        if (!optionalTweet.isPresent()) {
+            throw new NotFoundException("Tweet with id " + id + " does not exist");
+        }
+
+        Tweet tweet = optionalTweet.get();
+
+        if (tweet.isDeleted()) {
+            throw new BadRequestException("Tweet with id " + id + " has been deleted");
+        }
+        
+        return hashtagMapper.entitiesToDtos(tweet.getHashtags());
     }
 }
