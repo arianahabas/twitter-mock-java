@@ -12,11 +12,8 @@ import com.cooksys.social_media_api.dtos.ProfileDto;
 
 public interface ProfileMapper {
 	Profile dtoToEntity(ProfileDto profileDto);
-	
-	List<Profile> dtosToEntities(List<ProfileDto> profileDtos);
-	
+
 	ProfileDto entitiyToDto(Profile profile);
-	
-	List<ProfileDto> entitiesToDtos(List<Profile> profiles);
+
 
 }

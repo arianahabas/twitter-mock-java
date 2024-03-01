@@ -28,11 +28,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +44,20 @@ public class TweetServiceImpl implements TweetService {
     private final CredentialsMapper credentialsMapper;
     private final HashtagRepository hashtagRepository;
     private final HashtagMapper hashtagMapper;
+
+    public Tweet validateAndGetTweetById(Long id) {
+        Optional<Tweet> optionalTweet = tweetRepository.findById(id);
+        if (optionalTweet.isEmpty()) {
+            throw new NotFoundException("Tweet with id " + id + " does not exist");
+        }
+
+        Tweet tweet = optionalTweet.get();
+
+        if (tweet.isDeleted()) {
+            throw new BadRequestException("Tweet with id " + id + " has been deleted");
+        }
+        return tweet;
+    }
 
 
     @Override
@@ -92,8 +105,7 @@ public class TweetServiceImpl implements TweetService {
 	        		hashtagRepository.saveAndFlush(hashtag);
         		}
         	}
-        	
-        	List<User> mentionedUsers = new ArrayList<>();
+
         	if(content[x].charAt(0) == '@') {
         		User user = userRepository.findByCredentialsUsername(content[x].substring(1)).get();
         		tweet.getMentionedUsers().add(user);
@@ -113,26 +125,11 @@ public class TweetServiceImpl implements TweetService {
 
     @Override
     public TweetResponseDto getTweetById(Long id) {
-        Optional<Tweet> optionalTweet = tweetRepository.findById(id);
-        if (optionalTweet.isPresent()) {
-            Tweet tweet = optionalTweet.get();
-            if (tweet.isDeleted()) {
-                throw new BadRequestException("Tweet with id " + id + " has been deleted");
-            }
-            return tweetMapper.entityToResponseDto(tweet);
-        } else {
-            throw new NotFoundException("Tweet with id " + id + " not found");
-        }
+        return tweetMapper.entityToResponseDto(validateAndGetTweetById(id));
     }
 
     public TweetResponseDto replyToTweet(TweetRequestDto tweetRequestDto, Long id) {
-
-        //Tweet that is being replied to
-        Optional<Tweet> toReplyTweet = tweetRepository.findById(id);
-
-        if (!toReplyTweet.isPresent() || toReplyTweet.get().isDeleted()) {
-            throw new NotFoundException("Tweet " + id + " not found");
-        }
+        Tweet toReplyTweet = validateAndGetTweetById(id);
 
         //Validation check -> Making sure content is provided.
         if (tweetRequestDto.getContent() == null) {
@@ -165,7 +162,7 @@ public class TweetServiceImpl implements TweetService {
 
         //Reply to the tweet
         Tweet newReplyTweet = new Tweet();
-        newReplyTweet.setInReplyTo(toReplyTweet.get());
+        newReplyTweet.setInReplyTo(toReplyTweet);
         newReplyTweet.setAuthor(userApplyingToTweet.get());
         newReplyTweet.setContent(tweetRequestDto.getContent());
 
@@ -176,7 +173,7 @@ public class TweetServiceImpl implements TweetService {
          */
         List<String> usernameMentioned = new ArrayList<>();
         List<String> hashtags = new ArrayList<>();
-        for (String word : tweetRequestDto.getContent().split("\s")) {
+        for (String word : tweetRequestDto.getContent().split(" ")) {
             if (word.contains("@")) {
                 usernameMentioned.add(word);
             }
@@ -190,14 +187,8 @@ public class TweetServiceImpl implements TweetService {
 
     @Override
     public List<TweetResponseDto> getAllTweetReplies(Long id) {
-        Optional<Tweet> tweet = tweetRepository.findById(id);
-        System.out.println(tweet.isEmpty());
-        System.out.println(!tweet.get().isDeleted());
-        if (tweet.isEmpty() || tweet.get().isDeleted()) {
-            throw new NotFoundException("Tweet does not exists");
-        }
-
-        List<Tweet> allTweets = tweet.get().getReplies();
+        Tweet tweet = validateAndGetTweetById(id);
+        List<Tweet> allTweets = tweet.getReplies();
         List<Tweet> replyTweets = new ArrayList<>();
 
         for (Tweet checkTweet : allTweets) {
@@ -209,15 +200,7 @@ public class TweetServiceImpl implements TweetService {
     }
 
     public TweetResponseDto deleteTweet(CredentialsDto credentialsDto, Long id) {
-        Optional<Tweet> optionalTweet = tweetRepository.findById(id);
-        //check if the tweet with id exists
-        if (!optionalTweet.isPresent()) {
-            throw new NotFoundException("Tweet with id " + id + " does not exist");
-        }
-        Tweet tweet = optionalTweet.get();
-        if (tweet.isDeleted()) {
-            throw new BadRequestException("Tweet with id: " + id + " is deleted");
-        }
+        Tweet tweet = validateAndGetTweetById(id);
         User user = tweet.getAuthor();
         Credentials credentialsOnTweet = user.getCredentials();
         CredentialsDto credentialsDtoOnTweet = credentialsMapper.entityToDto(credentialsOnTweet);
@@ -238,16 +221,7 @@ public class TweetServiceImpl implements TweetService {
 
     @Override
     public List<UserResponseDto> getLikedBy(Long id) {
-        Optional<Tweet> optionalTweet = tweetRepository.findById(id);
-        if (!optionalTweet.isPresent()) {
-            throw new NotFoundException("Tweet with id " + id + " does not exist");
-        }
-
-        Tweet tweet = optionalTweet.get();
-
-        if (tweet.isDeleted()) {
-            throw new BadRequestException("Tweet with id " + id + " has been deleted");
-        }
+      Tweet tweet = validateAndGetTweetById(id);
 
         List<User> users = new ArrayList<>();
 
@@ -261,16 +235,7 @@ public class TweetServiceImpl implements TweetService {
 
     @Override
     public List<UserResponseDto> getMentionedUsers(Long id) {
-        Optional<Tweet> optionalTweet = tweetRepository.findById(id);
-        if (!optionalTweet.isPresent()) {
-            throw new NotFoundException("Tweet with id " + id + " does not exist");
-        }
-
-        Tweet tweet = optionalTweet.get();
-
-        if (tweet.isDeleted()) {
-            throw new BadRequestException("Tweet with id " + id + " has been deleted");
-        }
+        Tweet tweet = validateAndGetTweetById(id);
 
         List<User> users = new ArrayList<>();
 
@@ -284,32 +249,20 @@ public class TweetServiceImpl implements TweetService {
 
     @Override
     public List<TweetResponseDto> getTweetReposts(Long id) {
-        // Verify the original tweet exists and is not deleted
-        if (!tweetRepository.existsByIdAndDeletedFalse(id)) {
-            throw new NotFoundException("Tweet with id " + id + " does not exist or has been deleted");
-        }
-
-        // query for non-deleted reposts of the tweet
         List<Tweet> reposts = tweetRepository.findByRepostOfIdAndDeletedFalse(id);
 
-        // Convert the reposts to DTOs
-        List<TweetResponseDto> result = tweetMapper.entitiesToResponseDtos(reposts);
-        return result;
+        return tweetMapper.entitiesToResponseDtos(reposts);
     }
 
     @Override
     public void likeTweet(CredentialsDto credentialsDto, Long id) {
         Optional<User> optionalUser = userRepository.findByCredentialsUsernameAndCredentialsPasswordAndDeletedFalse(credentialsDto.getUsername(), credentialsDto.getPassword());
-        if (!optionalUser.isPresent()) {
+        if (optionalUser.isEmpty()) {
             throw new NotFoundException("Invalid credentials or user does not exist.");
         }
         User user = optionalUser.get();
 
-        Optional<Tweet> optionalTweet = tweetRepository.findById(id);
-        if (!optionalTweet.isPresent()) {
-            throw new NotFoundException("Tweet with id " + id + " does not exist");
-        }
-        Tweet tweet = optionalTweet.get();
+        Tweet tweet = validateAndGetTweetById(id);
         user.getLikedTweets().add(tweet);
         userRepository.saveAndFlush(user);
 
@@ -346,12 +299,7 @@ public class TweetServiceImpl implements TweetService {
 
     @Override
     public ContextDto getTweetContext(Long id) {
-        // Attempt to find the target tweet by ID, excluding deleted tweets
-        Optional<Tweet> optionalTargetTweet = tweetRepository.findByIdAndDeletedFalse(id);
-        if (!optionalTargetTweet.isPresent()) {
-            throw new NotFoundException("Tweet with id " + id + " does not exist");
-        }
-        Tweet targetTweet = optionalTargetTweet.get();
+        Tweet targetTweet = validateAndGetTweetById(id);
 
         // Initialize the context DTO and set the target tweet
         ContextDto context = new ContextDto();
@@ -375,19 +323,8 @@ public class TweetServiceImpl implements TweetService {
     
     @Override
     public TweetResponseDto createRepost(Long id) {
-    	Optional<Tweet> optionalTweet = tweetRepository.findById(id);
-        if (!optionalTweet.isPresent()) {
-            throw new NotFoundException("Tweet with id " + id + " does not exist");
-        }
-
-        Tweet tweet = optionalTweet.get();
-
-        if (tweet.isDeleted()) {
-            throw new BadRequestException("Tweet with id " + id + " has been deleted");
-        }
-        
+    	Tweet tweet = validateAndGetTweetById(id);
         Tweet repostTweet = new Tweet();
-        
         repostTweet.setRepostOf(tweet);
         repostTweet.setAuthor(tweet.getAuthor());
         tweetRepository.saveAndFlush(repostTweet);
@@ -396,17 +333,7 @@ public class TweetServiceImpl implements TweetService {
     
     @Override
     public List<HashtagDto> getHashtags(Long id){
-    	Optional<Tweet> optionalTweet = tweetRepository.findById(id);
-        if (!optionalTweet.isPresent()) {
-            throw new NotFoundException("Tweet with id " + id + " does not exist");
-        }
-
-        Tweet tweet = optionalTweet.get();
-
-        if (tweet.isDeleted()) {
-            throw new BadRequestException("Tweet with id " + id + " has been deleted");
-        }
-        
+    	Tweet tweet = validateAndGetTweetById(id);
         return hashtagMapper.entitiesToDtos(tweet.getHashtags());
     }
 }
