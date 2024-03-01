@@ -40,7 +40,7 @@ public class TweetController {
     }
 
     @PostMapping("/{id}/reply")
-    public TweetResponseDto replyToTweet(@RequestBody TweetRequestDto tweetRequestDto, @PathVariable Long id){
+    public TweetResponseDto replyToTweet(@RequestBody TweetRequestDto tweetRequestDto, @PathVariable("id") Long id){
         return tweetService.replyToTweet(tweetRequestDto, id);
     }
 
@@ -50,12 +50,12 @@ public class TweetController {
     }
     
     @GetMapping("/{id}/likes")
-    public List<UserResponseDto> getLikedBy(@PathVariable Long id){
+    public List<UserResponseDto> getLikedBy(@PathVariable("id") Long id){
     	return tweetService.getLikedBy(id);
     }
     
     @GetMapping("/{id}/mentions")
-    public List<UserResponseDto> getMentionedUsers(@PathVariable Long id){
+    public List<UserResponseDto> getMentionedUsers(@PathVariable("id")  Long id){
     	return tweetService.getMentionedUsers(id);
     }
 
