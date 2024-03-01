@@ -18,7 +18,6 @@ import com.cooksys.social_media_api.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import javax.sound.midi.Soundbank;
 import java.util.*;
 
 @Service
@@ -206,24 +205,29 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<TweetResponseDto> getAllUserFeed(String username) {
         //Validation check -> Checking if user exist
-        Optional<User> user = activeUserCheck(username);
+        Optional<User> userGetsFeed = activeUserCheck(username);
 
         List<Tweet> nonDeletedTweets = new ArrayList<>();
 
-        List<Tweet> simpleTweets = user.get().getTweets();
+        List<Tweet> allUsersTweets = userGetsFeed.get().getTweets();
 
-        nonDeletedTweets = findsAllRelatedTweets(simpleTweets);
+        nonDeletedTweets = findsAllRelatedTweets(allUsersTweets);
+
+        //Find all non deleted tweets that user is following
+        List<User> followersFeed = userGetsFeed.get().getFollowers();
+        List<Tweet> nonDeletedFollowerTweets = new ArrayList<>();
+        for(User userFollower : followersFeed){
+            if(!userFollower.isDeleted()){
+                nonDeletedFollowerTweets.addAll(findsAllRelatedTweets(userFollower.getTweets()));
+            }
+        }
+
+        nonDeletedTweets.addAll(nonDeletedFollowerTweets);
 
         //Reversed Chronological Order
         nonDeletedTweets.sort(Comparator.comparing(Tweet::getPosted).reversed());
 
-        List<User> following = user.get().getFollowing();
-
-        /*
-        TODO: Ask question if all Tweets
-        as well as all (non-deleted) tweets authored by users the given user is following.
-        This includes simple tweets, reposts, and replies.
-        */
+        List<User> following = userGetsFeed.get().getFollowing();
 
         return tweetMapper.entitiesToResponseDtos(nonDeletedTweets);
     }
