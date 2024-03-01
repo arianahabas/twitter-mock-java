@@ -42,4 +42,9 @@ public class UserController {
     public List<TweetResponseDto> getUserTweets(@PathVariable("username") String username){
         return userService.getUserTweets(username);
     }
+    
+    @DeleteMapping("@{username}")
+    public UserResponseDto deleteUser(@PathVariable("username") String username) {
+    	return userService.deleteUser(username);
+    }
 }

@@ -129,4 +129,29 @@ public class UserServiceImpl implements UserService {
         return tweetMapper.entitiesToResponseDtos(user.getTweets());
 
     }
+    
+    @Override
+    public UserResponseDto deleteUser(String username) {
+    	Optional<User> optionalUser = userRepository.findByCredentialsUsername(username);
+        if (!optionalUser.isPresent()) {
+            throw new NotFoundException("User with username: " + username + " not found");
+        }
+        
+        //creating deep copy
+        User user = new User();
+        user.setCredentials(optionalUser.get().getCredentials());
+        user.setFollowers(optionalUser.get().getFollowers());
+        user.setFollowing(optionalUser.get().getFollowing());
+        user.setId(optionalUser.get().getId());
+        user.setJoined(optionalUser.get().getJoined());
+        user.setLikedTweets(optionalUser.get().getLikedTweets());
+        user.setMentionedTweets(optionalUser.get().getMentionedTweets());
+        user.setProfile(optionalUser.get().getProfile());
+        user.setTweets(optionalUser.get().getTweets());
+        user.setDeleted(false);
+        
+        optionalUser.get().setDeleted(true);
+    	
+        return userMapper.entityToResponseDto(user);
+    }
 }
