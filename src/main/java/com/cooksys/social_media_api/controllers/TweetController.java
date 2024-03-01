@@ -54,5 +54,9 @@ public class TweetController {
     	return tweetService.getLikedBy(id);
     }
 
+    @PostMapping("/{id}/like")
+    public void likeTweet(@PathVariable("id") Long id, @RequestBody CredentialsDto credentialsDto){
+       tweetService.likeTweet(credentialsDto, id);
+    }
 
 }

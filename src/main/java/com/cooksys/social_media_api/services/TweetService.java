@@ -20,4 +20,6 @@ public interface TweetService {
 	TweetResponseDto createTweet(TweetRequestDto tweetRequestDto);
 
 	List<UserResponseDto> getLikedBy(Long id);
+
+    void likeTweet(CredentialsDto credentialsDto, Long id);
 }
