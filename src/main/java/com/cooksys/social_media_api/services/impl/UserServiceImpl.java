@@ -1,31 +1,25 @@
 package com.cooksys.social_media_api.services.impl;
 
-import com.cooksys.social_media_api.dtos.ProfileDto;
-import com.cooksys.social_media_api.dtos.TweetResponseDto;
-import com.cooksys.social_media_api.dtos.UserRequestDto;
-import com.cooksys.social_media_api.dtos.UserResponseDto;
+import com.cooksys.social_media_api.dtos.*;
 import com.cooksys.social_media_api.entities.Credentials;
 import com.cooksys.social_media_api.entities.Profile;
 import com.cooksys.social_media_api.entities.Tweet;
 import com.cooksys.social_media_api.entities.User;
+import com.cooksys.social_media_api.exceptions.BadRequestException;
 import com.cooksys.social_media_api.exceptions.NotAuthorizedException;
 import com.cooksys.social_media_api.exceptions.NotFoundException;
+import com.cooksys.social_media_api.mappers.CredentialsMapper;
 import com.cooksys.social_media_api.mappers.ProfileMapper;
-import com.cooksys.social_media_api.exceptions.BadRequestException;
 import com.cooksys.social_media_api.mappers.TweetMapper;
 import com.cooksys.social_media_api.mappers.UserMapper;
 import com.cooksys.social_media_api.repositories.TweetRepository;
 import com.cooksys.social_media_api.repositories.UserRepository;
 import com.cooksys.social_media_api.services.UserService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -40,6 +34,8 @@ public class UserServiceImpl implements UserService {
     private final TweetRepository tweetRepository;
 
     private final ProfileMapper profileMapper;
+
+    private final CredentialsMapper credentialsMapper;
 
     /**
      * Checks to see if the user exists
@@ -198,7 +194,7 @@ public class UserServiceImpl implements UserService {
 
         List<User> followers = new ArrayList<>();
 
-        for (User u : user.getFollowers()) {
+        for (User u : user.getFollowing()) {
             if (!u.isDeleted()) {
                 followers.add(u);
             }
@@ -362,5 +358,36 @@ public class UserServiceImpl implements UserService {
         optionalUser.get().setDeleted(true);
 
         return userMapper.entityToResponseDto(user);
+    }
+
+
+    @Override
+    public void unsubscribeUser(CredentialsDto credentialsDto, String username) {
+        // get the user to unfollow and check credentials and deleted status
+        Optional<User> optionalUserToUnfollow = userRepository.findByCredentialsUsernameAndDeletedFalse(username);
+        if (!optionalUserToUnfollow.isPresent()) {
+            throw new NotFoundException("User " + username + " does not exist or has been deleted.");
+        }
+        User userToUnfollow = optionalUserToUnfollow.get();
+
+
+        // Get the follower and verify the credentials match an active user
+        Optional<User> optionalFollower = userRepository.findByCredentialsUsernameAndCredentialsPasswordAndDeletedFalse(credentialsDto.getUsername(), credentialsDto.getPassword());
+        if (!optionalFollower.isPresent()) {
+            throw new NotFoundException("Invalid credentials or user does not exist.");
+        }
+        User follower = optionalFollower.get();
+
+        // Check if the follower is actually following the user to unfollow
+        if (!follower.getFollowers().contains(userToUnfollow)) {
+            throw new NotFoundException("No following relationship exists between " + credentialsDto.getUsername() + " and " + username);
+        }
+
+        // Remove the following relationship
+        follower.getFollowers().remove(userToUnfollow);
+
+        // Save changes
+        userRepository.saveAndFlush(follower);
+
     }
 }

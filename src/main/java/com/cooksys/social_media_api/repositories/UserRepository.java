@@ -19,4 +19,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByCredentialsUsernameAndCredentialsPasswordAndDeletedFalse(String username, String password);
 
     boolean existsByCredentialsUsernameAndDeletedFalse(String username);
+    Optional<User> findByCredentialsUsernameAndDeletedFalse(String username);
+
 }
