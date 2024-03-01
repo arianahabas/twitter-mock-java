@@ -314,7 +314,7 @@ public class UserServiceImpl implements UserService {
         currentFollowers.removeIf(User::isDeleted);
 
         for(User followingUser : currentFollowers){
-            if(followingUser.getCredentials().equals(userRequestDto.getCredentials().getUsername())){
+            if(followingUser.getCredentials().getUsername().equals(userRequestDto.getCredentials().getUsername())){
                 break;
             }
             currentFollowers.add(followingUser);
