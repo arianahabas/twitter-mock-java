@@ -1,5 +1,6 @@
 package com.cooksys.social_media_api.controllers;
 
+import com.cooksys.social_media_api.dtos.TweetResponseDto;
 import com.cooksys.social_media_api.dtos.UserRequestDto;
 import com.cooksys.social_media_api.dtos.UserResponseDto;
 import com.cooksys.social_media_api.services.UserService;
@@ -35,5 +36,10 @@ public class UserController {
     @GetMapping("/@{username}/followers")
     public List<UserResponseDto> getFollowers(@PathVariable("username") String username){
     	return userService.getFollowers(username);
+    }
+
+    @GetMapping("@{username}/tweets")
+    public List<TweetResponseDto> getUserTweets(@PathVariable("username") String username){
+        return userService.getUserTweets(username);
     }
 }

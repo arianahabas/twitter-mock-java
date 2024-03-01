@@ -35,7 +35,7 @@ public class TweetController {
     }
 
     @GetMapping("{id}")
-    public TweetResponseDto getTweetById(@PathVariable Long id) {
+    public TweetResponseDto getTweetById(@PathVariable("id")  Long id) {
         return tweetService.getTweetById(id);
     }
 
@@ -53,5 +53,6 @@ public class TweetController {
     public List<UserResponseDto> getLikedBy(@PathVariable Long id){
     	return tweetService.getLikedBy(id);
     }
+
 
 }

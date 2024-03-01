@@ -1,18 +1,18 @@
 package com.cooksys.social_media_api.services.impl;
 
+import com.cooksys.social_media_api.dtos.TweetResponseDto;
 import com.cooksys.social_media_api.dtos.UserRequestDto;
 import com.cooksys.social_media_api.dtos.UserResponseDto;
 import com.cooksys.social_media_api.entities.Credentials;
 import com.cooksys.social_media_api.entities.Profile;
 import com.cooksys.social_media_api.entities.User;
+import com.cooksys.social_media_api.exceptions.BadRequestException;
 import com.cooksys.social_media_api.exceptions.NotFoundException;
+import com.cooksys.social_media_api.mappers.TweetMapper;
 import com.cooksys.social_media_api.mappers.UserMapper;
 import com.cooksys.social_media_api.repositories.UserRepository;
 import com.cooksys.social_media_api.services.UserService;
-
-import com.cooksys.social_media_api.exceptions.BadRequestException;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -26,6 +26,8 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     private final UserMapper userMapper;
+
+    private final TweetMapper tweetMapper;
 
 
     @Override
@@ -112,7 +114,19 @@ public class UserServiceImpl implements UserService {
     	 
     	 return userMapper.entitiesToResponseDtos(followers);
     }
-    
-    
 
+    @Override
+    public List<TweetResponseDto> getUserTweets(String username) {
+        Optional<User> optionalUser = userRepository.findByCredentialsUsername(username);
+        if (!optionalUser.isPresent()) {
+            throw new NotFoundException("User with username: " + username + " not found");
+        }
+        User user = optionalUser.get();
+
+        if (user.isDeleted()) {
+            throw new BadRequestException("User with username: " + username + " has been deleted");
+        }
+        return tweetMapper.entitiesToResponseDtos(user.getTweets());
+
+    }
 }

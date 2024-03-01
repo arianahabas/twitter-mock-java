@@ -1,5 +1,6 @@
 package com.cooksys.social_media_api.services;
 
+import com.cooksys.social_media_api.dtos.TweetResponseDto;
 import com.cooksys.social_media_api.dtos.UserRequestDto;
 import com.cooksys.social_media_api.dtos.UserResponseDto;
 
@@ -13,4 +14,6 @@ public interface UserService {
     UserResponseDto findByUsername(String username);
 
 	List<UserResponseDto> getFollowers(String username);
+
+    List<TweetResponseDto> getUserTweets(String username);
 }
