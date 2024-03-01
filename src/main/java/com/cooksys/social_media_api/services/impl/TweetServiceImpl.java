@@ -269,4 +269,13 @@ public class TweetServiceImpl implements TweetService {
         userRepository.saveAndFlush(user);
 
     }
+    @Override
+    public List<TweetResponseDto> getAllReposts(Long id) {
+        return null;
+    }
+
+    @Override
+    public List<TweetResponseDto> getAllTweetsWithContext(Long id) {
+        return null;
+    }
 }

@@ -68,4 +68,14 @@ public class TweetController {
        tweetService.likeTweet(credentialsDto, id);
     }
 
+    @GetMapping("/{id}/reposts")
+    public List<TweetResponseDto> getAllReposts(@PathVariable("id") Long id){
+        return tweetService.getAllReposts(id);
+    }
+
+    @GetMapping("/{id}/context")
+    public List<TweetResponseDto> getAllTweetsWithContext(@PathVariable("id") Long id){
+        return tweetService.getAllTweetsWithContext(id);
+    }
+
 }

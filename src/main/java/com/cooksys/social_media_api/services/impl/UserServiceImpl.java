@@ -80,7 +80,7 @@ public class UserServiceImpl implements UserService {
      */
     public void credentialsCheck(UserRequestDto userRequestDto) {
         //Validation check -> Making sure credentials are provided.
-        if(userRequestDto.getCredentials() == null){
+        if (userRequestDto.getCredentials() == null) {
             throw new NotAuthorizedException("Credentials are required");
         }
         //Validation check -> Making sure all fields are provided in Credentials.
@@ -136,9 +136,20 @@ public class UserServiceImpl implements UserService {
         }
 
         //Validation check -> Duplication of username
-        if (userRepository.existsByCredentialsUsername(credentials.getUsername())) {
-            throw new BadRequestException("Username already exists");
+        Optional<User> userCheck = userRepository.findByCredentialsUsername(credentials.getUsername());
+
+        if(userCheck.isPresent()){
+            if (userCheck.get().isDeleted()){
+                System.out.println("Enters into function");
+                user.setDeleted(false);
+                user.getCredentials().setPassword(credentials.getPassword());
+                user.setProfile(profile);
+            }else if (userRepository.existsByCredentialsUsername(userRequestDto.getCredentials().getUsername())) {
+                throw new BadRequestException("Username already exists");
+            }
         }
+
+
 
         return userMapper.entityToResponseDto(userRepository.saveAndFlush(user));
     }
