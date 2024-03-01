@@ -15,10 +15,10 @@ import com.cooksys.social_media_api.mappers.UserMapper;
 import com.cooksys.social_media_api.repositories.TweetRepository;
 import com.cooksys.social_media_api.repositories.UserRepository;
 import com.cooksys.social_media_api.services.UserService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.sound.midi.Soundbank;
 import java.util.*;
 
 @Service
@@ -136,8 +136,8 @@ public class UserServiceImpl implements UserService {
 
         //TODO: Need to figure out why it is not creating a second user and a deleted user
 
-        if(userCheck.isPresent()){
-            if (userCheck.get().isDeleted()){
+        if (userCheck.isPresent()) {
+            if (userCheck.get().isDeleted()) {
                 User reviveDeletedUser = userCheck.get();
                 reviveDeletedUser.setDeleted(false);
                 reviveDeletedUser.getCredentials().setPassword(credentials.getPassword());
@@ -149,7 +149,7 @@ public class UserServiceImpl implements UserService {
                 user.setProfile(profile);
 
                  */
-            }else if (userRepository.existsByCredentialsUsername(userRequestDto.getCredentials().getUsername())) {
+            } else if (userRepository.existsByCredentialsUsername(userRequestDto.getCredentials().getUsername())) {
                 throw new BadRequestException("Username already exists");
             }
         }
@@ -297,14 +297,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void subscribeUser(CredentialsDto credentialsDto, String username) {
-
         Optional<User> optionalUserToFollow = userRepository.findByCredentialsUsernameAndDeletedFalse(username);
         if (!optionalUserToFollow.isPresent()) {
             throw new NotFoundException("User " + username + " does not exist or has been deleted.");
         }
         User userToFollow = optionalUserToFollow.get();
-
-
 
         Optional<User> optionalRequester = userRepository.findByCredentialsUsernameAndCredentialsPasswordAndDeletedFalse(credentialsDto.getUsername(), credentialsDto.getPassword());
         if (!optionalRequester.isPresent()) {
