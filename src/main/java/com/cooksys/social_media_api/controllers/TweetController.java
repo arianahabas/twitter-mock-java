@@ -1,6 +1,7 @@
 package com.cooksys.social_media_api.controllers;
 
 import com.cooksys.social_media_api.dtos.CredentialsDto;
+import com.cooksys.social_media_api.dtos.HashtagDto;
 import com.cooksys.social_media_api.dtos.TweetRequestDto;
 import com.cooksys.social_media_api.dtos.TweetResponseDto;
 import com.cooksys.social_media_api.dtos.UserResponseDto;
@@ -76,5 +77,15 @@ public class TweetController {
     @GetMapping("/{id}/reposts")
     public List<TweetResponseDto> getTweetReposts(@PathVariable("id") Long id){
         return tweetService.getTweetReposts(id);
+    }
+    
+    @PostMapping("/{id}/repost")
+    public TweetResponseDto createRepost(@PathVariable("id") Long id) {
+    	return tweetService.createRepost(id);
+    }
+    
+    @GetMapping("/{id}/tags")
+    public List<HashtagDto> getTags(@PathVariable("id") Long id) {
+    	return tweetService.getHashtags(id);
     }
 }
