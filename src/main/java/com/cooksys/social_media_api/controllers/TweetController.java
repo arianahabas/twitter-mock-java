@@ -32,8 +32,15 @@ public class TweetController {
     }
 
     @PostMapping("/{id}/reply")
-    public TweetResponseDto replyToTweet(@RequestBody TweetRequestDto tweetRequestDto, @PathVariable Long id){
+    public TweetResponseDto replyToTweet(@RequestBody TweetRequestDto tweetRequestDto, @PathVariable("id") Long id){
         return tweetService.replyToTweet(tweetRequestDto, id);
     }
+
+    @GetMapping("{id}/replies")
+    public List<TweetResponseDto> getAllTweetReplies(@PathVariable("id") Long id){
+        return tweetService.getAllTweetReplies(id);
+    }
+
+
 
 }

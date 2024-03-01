@@ -1,5 +1,6 @@
 package com.cooksys.social_media_api.controllers;
 
+import com.cooksys.social_media_api.dtos.TweetResponseDto;
 import com.cooksys.social_media_api.dtos.UserRequestDto;
 import com.cooksys.social_media_api.dtos.UserResponseDto;
 import com.cooksys.social_media_api.services.UserService;
@@ -30,5 +31,30 @@ public class UserController {
     @GetMapping("/@{username}")
     public UserResponseDto getUser(@PathVariable("username") String username) {
         return userService.findByUsername(username);
+    }
+
+    @GetMapping("/@{username}/feed")
+    public List<TweetResponseDto> getAllUserFeed(@PathVariable("username") String username){
+        return userService.getAllUserFeed(username);
+    }
+
+    @GetMapping("/@{username}/mentions")
+    public List<TweetResponseDto> getAllUserMentionedTweets(@PathVariable("username") String username){
+        return userService.getAllUserMentionedTweets(username);
+    }
+
+    @GetMapping("/@{username}/following")
+    public List<UserResponseDto> getAllUsersFollowingProvidedUser(@PathVariable("username") String username){
+        return userService.getAllUsersFollowingProvidedUser(username);
+    }
+
+    @PatchMapping("/@{username}")
+    public UserResponseDto updateUserProfile(@RequestBody UserRequestDto userRequestDto, @PathVariable("username") String username){
+        return userService.updateUserProfile(userRequestDto, username);
+    }
+
+    @PostMapping("/@{username}/follow")
+    public void subscribesUser(@RequestBody UserRequestDto userRequestDto, @PathVariable("username") String username){
+        userService.subscribeUser(userRequestDto, username);
     }
 }
