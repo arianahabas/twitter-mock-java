@@ -17,4 +17,7 @@ public interface TweetRepository extends JpaRepository<Tweet, Long> {
 
     Optional<Tweet> findById(Long id);
 
+    boolean existsByIdAndDeletedFalse(Long id);
+
+    List<Tweet> findByRepostOfIdAndDeletedFalse(Long id);
 }
