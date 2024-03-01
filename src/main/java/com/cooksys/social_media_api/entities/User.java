@@ -39,7 +39,7 @@ public class User {
     @JoinTable(name ="followers_following")
     private List<User> followers = new ArrayList<>();
 
-    @ManyToMany(mappedBy = "followers", cascade = CascadeType.ALL)
+    @ManyToMany(mappedBy = "followers")
     private List<User> following = new ArrayList<>();
 
     @ManyToMany

@@ -354,6 +354,7 @@ public class UserServiceImpl implements UserService {
         user.setDeleted(false);
 
         optionalUser.get().setDeleted(true);
+        userRepository.saveAndFlush(optionalUser.get());
 
         return userMapper.entityToResponseDto(user);
     }
