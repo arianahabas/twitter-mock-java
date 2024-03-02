@@ -244,10 +244,8 @@ public class UserServiceImpl implements UserService {
 
         //Iterating through all the tweets to see if @username is in the content
         for (Tweet tweet : allTweetsInRepository) {
-            System.out.println(tweet.getContent());
             String findUsername = "@" + username;
             if (tweet.getContent() != null && tweet.getContent().contains(findUsername) && !tweet.isDeleted()) {
-                System.out.println("Enter in ");
                 nonDeletedMentionedTweets.add(tweet);
             }
         }

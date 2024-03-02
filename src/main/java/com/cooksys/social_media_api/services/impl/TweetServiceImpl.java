@@ -27,6 +27,7 @@ import com.cooksys.social_media_api.services.TweetService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.lang.annotation.Target;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -100,26 +101,25 @@ public class TweetServiceImpl implements TweetService {
 
 
         String content[] = tweet.getContent().split("\\s+");
-        
-        for(int x = 0; x < content.length; x++) {
-        	if(content[x].charAt(0) == '#') {
-        		if(hashtagRepository.findByLabelIgnoreCase(content[x].substring(1)).isPresent()) {
-        			hashtagRepository.findByLabelIgnoreCase(content[x].substring(1)).get().getTweets().add(tweet);
-        		}
-        		else {
-	        		Hashtag hashtag = new Hashtag();
-	        		hashtag.setLabel(content[x].substring(1));
-	        		hashtag.getTweets().add(tweet);
-	        		tweet.getHashtags().add(hashtag);
-	        		hashtagRepository.saveAndFlush(hashtag);
-        		}
-        	}
 
-        	if(content[x].charAt(0) == '@') {
-        		User user = userRepository.findByCredentialsUsername(content[x].substring(1)).get();
-        		tweet.getMentionedUsers().add(user);
-        		
-        	}
+        for (int x = 0; x < content.length; x++) {
+            if (content[x].charAt(0) == '#') {
+                if (hashtagRepository.findByLabelIgnoreCase(content[x].substring(1)).isPresent()) {
+                    hashtagRepository.findByLabelIgnoreCase(content[x].substring(1)).get().getTweets().add(tweet);
+                } else {
+                    Hashtag hashtag = new Hashtag();
+                    hashtag.setLabel(content[x].substring(1));
+                    hashtag.getTweets().add(tweet);
+                    tweet.getHashtags().add(hashtag);
+                    hashtagRepository.saveAndFlush(hashtag);
+                }
+            }
+
+            if (content[x].charAt(0) == '@') {
+                User user = userRepository.findByCredentialsUsername(content[x].substring(1)).get();
+                tweet.getMentionedUsers().add(user);
+
+            }
         }
 
         tweetRepository.saveAndFlush(tweet);
@@ -230,7 +230,7 @@ public class TweetServiceImpl implements TweetService {
 
     @Override
     public List<UserResponseDto> getLikedBy(Long id) {
-      Tweet tweet = validateAndGetTweetById(id);
+        Tweet tweet = validateAndGetTweetById(id);
 
         List<User> users = new ArrayList<>();
 
@@ -264,7 +264,6 @@ public class TweetServiceImpl implements TweetService {
     }
 
 
-
     @Override
     public void likeTweet(CredentialsDto credentialsDto, Long id) {
         User user = validateAndGetUserByCredentials(credentialsDto);
@@ -276,12 +275,25 @@ public class TweetServiceImpl implements TweetService {
 
     /**
      * Gathers replies to a given tweet, categorizing them as before or after the target tweet's posting time.
-     * @param tweet The target tweet for which replies are being gathered.
-     * @param targetTime The posting time of the target tweet to compare replies against.
-     * @param before A list of replies posted before the target tweet.
-     * @param after A list of replies posted after the target tweet.
+     *
+     * @param tweet      The target tweet for which replies are being gathered.
+     * @param before     A list of replies posted before the target tweet.
+     * @param after      A list of replies posted after the target tweet.
      */
-    private void gatherReplies(Tweet tweet, Timestamp targetTime, List<TweetResponseDto> before, List<TweetResponseDto> after) {
+    private void gatherReplies(Tweet tweet, List<TweetResponseDto> before, List<TweetResponseDto> after) {
+
+        //Need to first check if the original tweet has in reply to.
+        if(!tweet.isDeleted()){
+
+            TweetResponseDto initialReplyDto = tweetMapper.entityToResponseDto(tweet);
+
+            if(initialReplyDto != null){
+
+                before.add(initialReplyDto.getInReplyTo());
+            }
+
+        }
+
         // Iterate over all replies to the current tweet
         for (Tweet reply : tweet.getReplies()) {
             // Skip any replies that are marked as deleted
@@ -289,17 +301,16 @@ public class TweetServiceImpl implements TweetService {
                 // Convert the reply to a DTO for inclusion in the response
                 TweetResponseDto replyDto = tweetMapper.entityToResponseDto(reply);
 
-                // If the reply was posted before the target tweet, add it to the before list
-                if (reply.getPosted().before(targetTime)) {
-                    before.add(replyDto);
-                }
-                // If the reply was posted after the target tweet, add it to the after list
-                else if (reply.getPosted().after(targetTime)) {
+                if(replyDto != null){
+                    //Adding the in replies to
+                    before.add(replyDto.getInReplyTo());
+                    //Adding the replies
                     after.add(replyDto);
                 }
-                // Gather replies to this reply, using the same target time
-                gatherReplies(reply, targetTime, before, after);
+
             }
+            // Gather replies to this reply, using the same target time
+            gatherReplies(reply, before, after);
         }
     }
 
@@ -316,7 +327,12 @@ public class TweetServiceImpl implements TweetService {
         List<TweetResponseDto> after = new ArrayList<>();
 
         // Gather all relevant replies, categorizing them as before or after the target tweet
-        gatherReplies(targetTweet, targetTweet.getPosted(), before, after);
+        gatherReplies(targetTweet, before, after);
+
+        //If first element is null that means the tweet reply stop there
+        if(before.get(0) == null){
+            before.clear();
+        }
 
         // Set the before and after lists in the context DTO
         context.setBefore(before);
@@ -326,10 +342,10 @@ public class TweetServiceImpl implements TweetService {
         return context;
 
     }
-    
+
     @Override
     public TweetResponseDto createRepost(CredentialsDto credentialsDto, Long id) {
-    	Tweet originalTweet = validateAndGetTweetById(id);
+        Tweet originalTweet = validateAndGetTweetById(id);
         User user = validateAndGetUserByCredentials(credentialsDto);
 
         // Create a new repost tweet
@@ -344,10 +360,10 @@ public class TweetServiceImpl implements TweetService {
         // Return the newly created repost tweet in the response
         return tweetMapper.entityToResponseDto(savedRepostTweet);
     }
-    
+
     @Override
-    public List<HashtagDto> getHashtags(Long id){
-    	Tweet tweet = validateAndGetTweetById(id);
+    public List<HashtagDto> getHashtags(Long id) {
+        Tweet tweet = validateAndGetTweetById(id);
         return hashtagMapper.entitiesToDtos(tweet.getHashtags());
     }
 }
