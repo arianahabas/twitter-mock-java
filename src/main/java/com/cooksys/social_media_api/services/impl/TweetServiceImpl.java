@@ -27,7 +27,6 @@ import com.cooksys.social_media_api.services.TweetService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.lang.annotation.Target;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
